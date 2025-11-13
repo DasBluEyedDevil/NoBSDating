@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/chat_api_service.dart';
 import '../services/subscription_service.dart';
 import '../services/discovery_preferences_service.dart';
+import '../services/analytics_service.dart';
 import '../widgets/premium_gate_dialog.dart';
 import '../models/profile.dart';
 import '../models/match.dart';
@@ -191,10 +192,18 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
       // Record the action
       await prefsService.recordProfileAction(profile.userId, 'like');
 
+      // Track profile liked event
+      await AnalyticsService.logProfileLiked(profile.userId);
+
       // Create match
       final result = await chatService.createMatch(currentUserId, profile.userId);
       final alreadyExists = result['alreadyExists'] as bool;
       _lastMatch = result['match'] as Match?;
+
+      // Track match creation if new match
+      if (!alreadyExists && _lastMatch != null) {
+        await AnalyticsService.logMatchCreated(_lastMatch!.matchId);
+      }
 
       if (mounted) {
         if (alreadyExists) {
@@ -241,6 +250,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
     final prefsService = context.read<DiscoveryPreferencesService>();
     await prefsService.recordProfileAction(profile.userId, 'pass');
 
+    // Track profile passed event
+    await AnalyticsService.logProfilePassed(profile.userId);
+
     // Move to next profile and show undo button
     _moveToNextProfile();
     _showUndo();
@@ -281,6 +293,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
     _undoTimer?.cancel();
 
     final prefsService = context.read<DiscoveryPreferencesService>();
+
+    // Track undo event
+    await AnalyticsService.logProfileUndo(_lastAction!);
 
     // Undo the last action in preferences
     await prefsService.undoLastAction();
@@ -362,6 +377,18 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
 
     // If filters were changed, reload profiles
     if (result == true) {
+      final prefsService = context.read<DiscoveryPreferencesService>();
+      final filters = prefsService.filters;
+
+      // Track filters applied
+      await AnalyticsService.logFiltersApplied({
+        'min_age': filters.minAge,
+        'max_age': filters.maxAge,
+        'max_distance': filters.maxDistance,
+        'interests_count': filters.selectedInterests.length,
+        'has_active_filters': filters.hasActiveFilters,
+      });
+
       _currentProfileIndex = 0;
       await _loadProfiles();
     }

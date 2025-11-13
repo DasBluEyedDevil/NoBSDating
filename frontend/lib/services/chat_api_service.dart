@@ -5,6 +5,7 @@ import '../config/app_config.dart';
 import '../models/match.dart';
 import '../models/message.dart';
 import 'auth_service.dart';
+import 'analytics_service.dart';
 
 class ChatApiService extends ChangeNotifier {
   final AuthService _authService;
@@ -116,6 +117,9 @@ class ChatApiService extends ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true && data['message'] != null) {
+          // Track message sent
+          await AnalyticsService.logMessageSent(matchId);
+
           return Message.fromJson(data['message']);
         } else {
           throw Exception('Invalid response format');
@@ -143,6 +147,10 @@ class ChatApiService extends ChangeNotifier {
         if (data['success'] != true) {
           throw Exception('Invalid response format');
         }
+
+        // Track unmatch event
+        await AnalyticsService.logUnmatch(matchId);
+
         notifyListeners();
       } else if (response.statusCode == 404) {
         throw Exception('Match not found');

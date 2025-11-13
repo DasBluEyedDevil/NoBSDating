@@ -56,4 +56,42 @@ router.post('/run-migrations', async (req, res) => {
   }
 });
 
+// TEMPORARY: Check what tables exist
+router.post('/check-tables', async (req, res) => {
+  const { secret } = req.body;
+
+  if (secret !== process.env.MIGRATION_SECRET) {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const client = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_URL?.includes('railway') ? { rejectUnauthorized: false } : false
+  });
+
+  try {
+    await client.connect();
+
+    const result = await client.query(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+      ORDER BY table_name;
+    `);
+
+    await client.end();
+
+    return res.json({
+      tables: result.rows.map(row => row.table_name),
+      count: result.rows.length
+    });
+
+  } catch (error: any) {
+    return res.status(500).json({
+      error: 'Query failed',
+      message: error.message
+    });
+  }
+});
+
 export default router;

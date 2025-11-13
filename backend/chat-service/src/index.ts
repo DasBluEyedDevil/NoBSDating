@@ -1,41 +1,90 @@
+import dotenv from 'dotenv';
+// Load environment variables first
+dotenv.config();
+
+// Initialize Sentry before any other imports
+import * as Sentry from '@sentry/node';
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: 0.1, // 10% of transactions
+  });
+}
+
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import helmet from 'helmet';
 import { Pool } from 'pg';
-import rateLimit from 'express-rate-limit';
-
-dotenv.config();
+import { authMiddleware } from './middleware/auth';
+import { validateMessage, validateMatch, validateReport, validateBlock } from './middleware/validation';
+import logger from './utils/logger';
+import { generalLimiter, matchLimiter, messageLimiter, reportLimiter } from './middleware/rate-limiter';
 
 const app = express();
 const PORT = process.env.PORT || 3003;
 
-if (!process.env.DATABASE_URL) {
-  console.error('ERROR: DATABASE_URL environment variable is required');
+// Log initialization
+if (process.env.SENTRY_DSN) {
+  logger.info('Sentry error tracking enabled', { environment: process.env.NODE_ENV || 'development' });
+} else {
+  logger.info('Sentry error tracking disabled (SENTRY_DSN not set)');
+}
+
+// In test environment, these are set in tests/setup.ts
+if (!process.env.DATABASE_URL && process.env.NODE_ENV !== 'test') {
+  logger.error('DATABASE_URL environment variable is required');
   process.exit(1);
 }
 
-// Rate limiter for match creation endpoint
-const matchLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 15, // limit each IP to 15 match creation attempts per windowMs (reasonable for a dating app)
-  message: 'Too many match requests, please try again later'
-});
+if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'test') {
+  logger.error('JWT_SECRET environment variable is required');
+  process.exit(1);
+}
 
-app.use(cors());
-app.use(express.json());
+// CORS origin from environment variable
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:19006';
 
-// Initialize PostgreSQL connection pool
+// Security middleware
+app.use(helmet());
+app.use(cors({
+  origin: CORS_ORIGIN,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json({ limit: '10kb' }));
+
+// Initialize PostgreSQL connection pool with proper configuration
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection cannot be established
+  ssl: process.env.DATABASE_URL?.includes('railway')
+    ? { rejectUnauthorized: true }
+    : false,
 });
 
-// Test database connection
-pool.on('connect', () => {
-  console.log('Connected to PostgreSQL database');
+// Database connection event handlers
+pool.on('connect', (client) => {
+  logger.info('New database connection established');
 });
 
-pool.on('error', (err) => {
-  console.error('PostgreSQL connection error:', err);
+pool.on('acquire', (client) => {
+  logger.debug('Database client acquired from pool');
+});
+
+pool.on('remove', (client) => {
+  logger.debug('Database client removed from pool');
+});
+
+pool.on('error', (err, client) => {
+  logger.error('Unexpected database connection error', {
+    error: err.message,
+    stack: err.stack
+  });
 });
 
 // Health check endpoint
@@ -43,55 +92,73 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', service: 'chat-service' });
 });
 
-// Get matches for a user
-app.get('/matches/:userId', async (req: Request, res: Response) => {
+// Get matches for a user - Only allow users to view their own matches
+app.get('/matches/:userId', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
-    
+    const requestedUserId = req.params.userId;
+    const authenticatedUserId = req.user!.userId;
+
+    // Authorization check: user can only view their own matches
+    if (requestedUserId !== authenticatedUserId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Cannot access other users\' matches'
+      });
+    }
+
     const result = await pool.query(
-      `SELECT id, user_id_1, user_id_2, created_at 
-       FROM matches 
+      `SELECT id, user_id_1, user_id_2, created_at
+       FROM matches
        WHERE user_id_1 = $1 OR user_id_2 = $1`,
-      [userId]
+      [requestedUserId]
     );
-    
+
     const matches = result.rows.map(match => ({
       id: match.id,
       userId1: match.user_id_1,
       userId2: match.user_id_2,
       createdAt: match.created_at
     }));
-    
+
     res.json({ success: true, matches });
   } catch (error) {
-    console.error('Failed to retrieve matches:', error);
+    logger.error('Failed to retrieve matches', { error, requestedUserId: req.params.userId });
     res.status(500).json({ success: false, error: 'Failed to retrieve matches' });
   }
 });
 
-// Create a match
-app.post('/matches', matchLimiter, async (req: Request, res: Response) => {
+// Create a match - Verify authenticated user is one of the participants
+app.post('/matches', authMiddleware, matchLimiter, validateMatch, async (req: Request, res: Response) => {
   try {
+    const authenticatedUserId = req.user!.userId;
     const { userId1, userId2 } = req.body;
-    
+
     if (!userId1 || !userId2) {
       return res.status(400).json({ success: false, error: 'Both userIds are required' });
     }
-    
+
+    // Authorization check: authenticated user must be one of the match participants
+    if (authenticatedUserId !== userId1 && authenticatedUserId !== userId2) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Can only create matches involving yourself'
+      });
+    }
+
     // Check for existing match in both directions
     const existingMatch = await pool.query(
-      `SELECT id, user_id_1, user_id_2, created_at 
-       FROM matches 
-       WHERE (user_id_1 = $1 AND user_id_2 = $2) 
+      `SELECT id, user_id_1, user_id_2, created_at
+       FROM matches
+       WHERE (user_id_1 = $1 AND user_id_2 = $2)
           OR (user_id_1 = $2 AND user_id_2 = $1)`,
       [userId1, userId2]
     );
-    
+
     // If match already exists, return the existing match
     if (existingMatch.rows.length > 0) {
       const match = existingMatch.rows[0];
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         match: {
           id: match.id,
           userId1: match.user_id_1,
@@ -101,21 +168,21 @@ app.post('/matches', matchLimiter, async (req: Request, res: Response) => {
         alreadyExists: true
       });
     }
-    
+
     // Create new match only if it doesn't exist
     const matchId = `match_${Date.now()}`;
-    
+
     const result = await pool.query(
-      `INSERT INTO matches (id, user_id_1, user_id_2) 
-       VALUES ($1, $2, $3) 
+      `INSERT INTO matches (id, user_id_1, user_id_2)
+       VALUES ($1, $2, $3)
        RETURNING id, user_id_1, user_id_2, created_at`,
       [matchId, userId1, userId2]
     );
-    
+
     const match = result.rows[0];
-    
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       match: {
         id: match.id,
         userId1: match.user_id_1,
@@ -124,24 +191,39 @@ app.post('/matches', matchLimiter, async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Failed to create match:', error);
+    logger.error('Failed to create match', { error, authenticatedUserId: req.user?.userId });
     res.status(500).json({ success: false, error: 'Failed to create match' });
   }
 });
 
-// Get messages for a match
-app.get('/messages/:matchId', async (req: Request, res: Response) => {
+// Get messages for a match - Verify user is part of the match
+app.get('/messages/:matchId', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
   try {
     const { matchId } = req.params;
-    
+    const authenticatedUserId = req.user!.userId;
+
+    // Verify the user is part of this match
+    const matchCheck = await pool.query(
+      `SELECT id FROM matches
+       WHERE id = $1 AND (user_id_1 = $2 OR user_id_2 = $2)`,
+      [matchId, authenticatedUserId]
+    );
+
+    if (matchCheck.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: You are not part of this match'
+      });
+    }
+
     const result = await pool.query(
-      `SELECT id, match_id, sender_id, text, created_at 
-       FROM messages 
-       WHERE match_id = $1 
+      `SELECT id, match_id, sender_id, text, created_at
+       FROM messages
+       WHERE match_id = $1
        ORDER BY created_at ASC`,
       [matchId]
     );
-    
+
     const messages = result.rows.map(msg => ({
       id: msg.id,
       matchId: msg.match_id,
@@ -149,21 +231,44 @@ app.get('/messages/:matchId', async (req: Request, res: Response) => {
       text: msg.text,
       timestamp: msg.created_at
     }));
-    
+
     res.json({ success: true, messages });
   } catch (error) {
-    console.error('Failed to retrieve messages:', error);
+    logger.error('Failed to retrieve messages', { error, matchId: req.params.matchId });
     res.status(500).json({ success: false, error: 'Failed to retrieve messages' });
   }
 });
 
-// Send a message
-app.post('/messages', async (req: Request, res: Response) => {
+// Send a message - Verify senderId matches authenticated user and user is part of match
+app.post('/messages', authMiddleware, messageLimiter, validateMessage, async (req: Request, res: Response) => {
   try {
+    const authenticatedUserId = req.user!.userId;
     const { matchId, senderId, text } = req.body;
 
     if (!matchId || !senderId || !text) {
       return res.status(400).json({ success: false, error: 'matchId, senderId, and text are required' });
+    }
+
+    // Authorization check: senderId must match authenticated user
+    if (senderId !== authenticatedUserId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Cannot send messages as another user'
+      });
+    }
+
+    // Verify the user is part of this match
+    const matchCheck = await pool.query(
+      `SELECT id FROM matches
+       WHERE id = $1 AND (user_id_1 = $2 OR user_id_2 = $2)`,
+      [matchId, authenticatedUserId]
+    );
+
+    if (matchCheck.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: You are not part of this match'
+      });
     }
 
     const messageId = `msg_${Date.now()}`;
@@ -188,15 +293,24 @@ app.post('/messages', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Failed to send message:', error);
+    logger.error('Failed to send message', { error, matchId: req.body.matchId, senderId: req.user?.userId });
     res.status(500).json({ success: false, error: 'Failed to send message' });
   }
 });
 
-// Get unread message counts for all matches of a user
-app.get('/matches/:userId/unread-counts', async (req: Request, res: Response) => {
+// Get unread message counts for all matches of a user - Only allow users to view their own unread counts
+app.get('/matches/:userId/unread-counts', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const requestedUserId = req.params.userId;
+    const authenticatedUserId = req.user!.userId;
+
+    // Authorization check: user can only view their own unread counts
+    if (requestedUserId !== authenticatedUserId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Cannot access other users\' unread counts'
+      });
+    }
 
     // Get unread counts for each match
     // A message is unread if it was sent by someone else and created after the user last viewed the chat
@@ -207,7 +321,7 @@ app.get('/matches/:userId/unread-counts', async (req: Request, res: Response) =>
        LEFT JOIN messages msg ON msg.match_id = m.id AND msg.sender_id != $1
        WHERE m.user_id_1 = $1 OR m.user_id_2 = $1
        GROUP BY m.match_id`,
-      [userId]
+      [requestedUserId]
     );
 
     const unreadCounts: { [key: string]: number } = {};
@@ -217,37 +331,75 @@ app.get('/matches/:userId/unread-counts', async (req: Request, res: Response) =>
 
     res.json({ success: true, unreadCounts });
   } catch (error) {
-    console.error('Failed to get unread counts:', error);
+    logger.error('Failed to get unread counts', { error, requestedUserId: req.params.userId });
     res.status(500).json({ success: false, error: 'Failed to get unread counts' });
   }
 });
 
 // Mark messages as read (placeholder for future implementation)
 // This would require adding a read_at timestamp to messages or a separate read_receipts table
-app.put('/messages/:matchId/mark-read', async (req: Request, res: Response) => {
+app.put('/messages/:matchId/mark-read', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
   try {
     const { matchId } = req.params;
+    const authenticatedUserId = req.user!.userId;
     const { userId } = req.body;
 
     if (!userId) {
       return res.status(400).json({ success: false, error: 'userId is required' });
     }
 
+    // Authorization check: userId must match authenticated user
+    if (userId !== authenticatedUserId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Cannot mark messages as read for another user'
+      });
+    }
+
+    // Verify the user is part of this match
+    const matchCheck = await pool.query(
+      `SELECT id FROM matches
+       WHERE id = $1 AND (user_id_1 = $2 OR user_id_2 = $2)`,
+      [matchId, authenticatedUserId]
+    );
+
+    if (matchCheck.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: You are not part of this match'
+      });
+    }
+
     // For now, just return success
     // In a full implementation, this would update a read_receipts table or add timestamps
     res.json({ success: true, message: 'Messages marked as read (placeholder)' });
   } catch (error) {
-    console.error('Failed to mark messages as read:', error);
+    logger.error('Failed to mark messages as read', { error, matchId: req.params.matchId });
     res.status(500).json({ success: false, error: 'Failed to mark messages as read' });
   }
 });
 
 // ===== SAFETY & MODERATION ENDPOINTS =====
 
-// Delete a match (unmatch)
-app.delete('/matches/:matchId', async (req: Request, res: Response) => {
+// Delete a match (unmatch) - Only allow users to delete their own matches
+app.delete('/matches/:matchId', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
   try {
     const { matchId } = req.params;
+    const authenticatedUserId = req.user!.userId;
+
+    // Verify the user is part of this match before allowing deletion
+    const matchCheck = await pool.query(
+      `SELECT id FROM matches
+       WHERE id = $1 AND (user_id_1 = $2 OR user_id_2 = $2)`,
+      [matchId, authenticatedUserId]
+    );
+
+    if (matchCheck.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: You are not part of this match or match not found'
+      });
+    }
 
     const result = await pool.query(
       `DELETE FROM matches WHERE id = $1 RETURNING id`,
@@ -266,15 +418,24 @@ app.delete('/matches/:matchId', async (req: Request, res: Response) => {
 
     res.json({ success: true, message: 'Match deleted successfully' });
   } catch (error) {
-    console.error('Failed to delete match:', error);
+    logger.error('Failed to delete match', { error, matchId: req.params.matchId });
     res.status(500).json({ success: false, error: 'Failed to delete match' });
   }
 });
 
-// Block a user
-app.post('/blocks', async (req: Request, res: Response) => {
+// Block a user - Verify userId matches authenticated user
+app.post('/blocks', authMiddleware, generalLimiter, validateBlock, async (req: Request, res: Response) => {
   try {
+    const authenticatedUserId = req.user!.userId;
     const { userId, blockedUserId, reason } = req.body;
+
+    // Authorization check: userId must match authenticated user
+    if (userId !== authenticatedUserId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Can only block users as yourself'
+      });
+    }
 
     if (!userId || !blockedUserId) {
       return res.status(400).json({ success: false, error: 'userId and blockedUserId are required' });
@@ -312,15 +473,24 @@ app.post('/blocks', async (req: Request, res: Response) => {
 
     res.json({ success: true, message: 'User blocked successfully' });
   } catch (error) {
-    console.error('Failed to block user:', error);
+    logger.error('Failed to block user', { error, userId: req.body.userId, blockedUserId: req.body.blockedUserId });
     res.status(500).json({ success: false, error: 'Failed to block user' });
   }
 });
 
-// Unblock a user
-app.delete('/blocks/:userId/:blockedUserId', async (req: Request, res: Response) => {
+// Unblock a user - Only allow users to unblock for themselves
+app.delete('/blocks/:userId/:blockedUserId', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
   try {
     const { userId, blockedUserId } = req.params;
+    const authenticatedUserId = req.user!.userId;
+
+    // Authorization check: userId must match authenticated user
+    if (userId !== authenticatedUserId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Can only unblock users for yourself'
+      });
+    }
 
     const result = await pool.query(
       `DELETE FROM blocks WHERE user_id = $1 AND blocked_user_id = $2 RETURNING id`,
@@ -333,15 +503,24 @@ app.delete('/blocks/:userId/:blockedUserId', async (req: Request, res: Response)
 
     res.json({ success: true, message: 'User unblocked successfully' });
   } catch (error) {
-    console.error('Failed to unblock user:', error);
+    logger.error('Failed to unblock user', { error, userId: req.params.userId, blockedUserId: req.params.blockedUserId });
     res.status(500).json({ success: false, error: 'Failed to unblock user' });
   }
 });
 
-// Get blocked users for a user
-app.get('/blocks/:userId', async (req: Request, res: Response) => {
+// Get blocked users for a user - Only allow users to view their own blocks
+app.get('/blocks/:userId', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
+    const authenticatedUserId = req.user!.userId;
+
+    // Authorization check: user can only view their own blocked users
+    if (userId !== authenticatedUserId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Cannot access other users\' blocked list'
+      });
+    }
 
     const result = await pool.query(
       `SELECT id, user_id, blocked_user_id, reason, created_at
@@ -361,15 +540,24 @@ app.get('/blocks/:userId', async (req: Request, res: Response) => {
 
     res.json({ success: true, blockedUsers });
   } catch (error) {
-    console.error('Failed to retrieve blocked users:', error);
+    logger.error('Failed to retrieve blocked users', { error, userId: req.params.userId });
     res.status(500).json({ success: false, error: 'Failed to retrieve blocked users' });
   }
 });
 
-// Report a user
-app.post('/reports', async (req: Request, res: Response) => {
+// Report a user - Verify reporterId matches authenticated user
+app.post('/reports', authMiddleware, reportLimiter, validateReport, async (req: Request, res: Response) => {
   try {
+    const authenticatedUserId = req.user!.userId;
     const { reporterId, reportedUserId, reason, details } = req.body;
+
+    // Authorization check: reporterId must match authenticated user
+    if (reporterId !== authenticatedUserId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden: Can only submit reports as yourself'
+      });
+    }
 
     if (!reporterId || !reportedUserId || !reason) {
       return res.status(400).json({
@@ -395,13 +583,13 @@ app.post('/reports', async (req: Request, res: Response) => {
       message: 'Report submitted successfully. Our moderation team will review it.'
     });
   } catch (error) {
-    console.error('Failed to submit report:', error);
+    logger.error('Failed to submit report', { error, reporterId: req.body.reporterId, reportedUserId: req.body.reportedUserId });
     res.status(500).json({ success: false, error: 'Failed to submit report' });
   }
 });
 
 // Get reports (for moderation - would need admin auth in production)
-app.get('/reports', async (req: Request, res: Response) => {
+app.get('/reports', generalLimiter, async (req: Request, res: Response) => {
   try {
     const { status } = req.query;
 
@@ -430,11 +618,33 @@ app.get('/reports', async (req: Request, res: Response) => {
 
     res.json({ success: true, reports });
   } catch (error) {
-    console.error('Failed to retrieve reports:', error);
+    logger.error('Failed to retrieve reports', { error });
     res.status(500).json({ success: false, error: 'Failed to retrieve reports' });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Chat service running on port ${PORT}`);
+// Sentry error handler - must be after all routes but before generic error handler
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
+
+// Generic error handler (optional - for catching any remaining errors)
+app.use((err: any, req: Request, res: Response, next: any) => {
+  logger.error('Unhandled error', {
+    error: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method
+  });
+  res.status(500).json({ success: false, error: 'Internal server error' });
 });
+
+// Only start server if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    logger.info(`Chat service started`, { port: PORT, environment: process.env.NODE_ENV || 'development' });
+  });
+}
+
+// Export for testing
+export default app;

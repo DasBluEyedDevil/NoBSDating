@@ -5,6 +5,9 @@ import '../services/subscription_service.dart';
 import '../services/profile_api_service.dart';
 import '../models/profile.dart';
 import 'profile_edit_screen.dart';
+import 'safety_settings_screen.dart';
+import '../widgets/feedback_widget.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -232,12 +235,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                     ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const SafetySettingsScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.security),
+                      label: const Text('Safety & Privacy'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
                   ],
                 ),
               ),
             );
           },
         ),
+      ),
+      floatingActionButton: FeedbackWidget(
+        onSubmit: (feedback) async {
+          // Log to Firebase Analytics
+          await FirebaseAnalytics.instance.logEvent(
+            name: 'beta_feedback',
+            parameters: feedback.toJson(),
+          );
+        },
       ),
     );
   }

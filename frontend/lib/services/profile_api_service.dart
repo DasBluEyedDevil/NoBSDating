@@ -4,6 +4,7 @@ import 'dart:convert';
 import '../config/app_config.dart';
 import '../models/profile.dart';
 import 'auth_service.dart';
+import 'analytics_service.dart';
 
 class ProfileApiService extends ChangeNotifier {
   final AuthService _authService;
@@ -104,8 +105,23 @@ class ProfileApiService extends ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true && data['profile'] != null) {
+          final createdProfile = Profile.fromJson(data['profile']);
+
+          // Track profile creation
+          await AnalyticsService.logProfileCreated();
+
+          // Set user properties
+          if (createdProfile.dateOfBirth != null) {
+            final ageGroup = AnalyticsService.calculateAgeGroup(createdProfile.dateOfBirth!);
+            await AnalyticsService.setUserProperties(
+              ageGroup: ageGroup,
+              gender: createdProfile.gender,
+              signupDate: DateTime.now(),
+            );
+          }
+
           notifyListeners();
-          return Profile.fromJson(data['profile']);
+          return createdProfile;
         } else {
           throw Exception('Invalid response format');
         }
@@ -133,6 +149,9 @@ class ProfileApiService extends ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true && data['profile'] != null) {
+          // Track profile update
+          await AnalyticsService.logProfileUpdated();
+
           notifyListeners();
           return Profile.fromJson(data['profile']);
         } else {

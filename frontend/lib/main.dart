@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'services/auth_service.dart';
 import 'services/subscription_service.dart';
 import 'services/profile_api_service.dart';
@@ -7,10 +11,43 @@ import 'services/chat_api_service.dart';
 import 'services/cache_service.dart';
 import 'services/safety_service.dart';
 import 'services/discovery_preferences_service.dart';
+import 'services/analytics_service.dart';
 import 'screens/auth_screen.dart';
 import 'screens/main_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase (will fail gracefully if not configured)
+  try {
+    await Firebase.initializeApp();
+
+    // Initialize Crashlytics
+    if (!kDebugMode) {
+      // Only enable crash reporting in release mode
+      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+      // Catch errors from the platform
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+    } else {
+      // In debug mode, still initialize but don't send crashes
+      debugPrint('Firebase Crashlytics initialized in debug mode (not sending crashes)');
+    }
+
+    // Initialize Analytics
+    // Analytics works in both debug and release mode
+    debugPrint('Firebase Analytics initialized');
+
+    debugPrint('Firebase initialized successfully');
+  } catch (e) {
+    debugPrint('Firebase initialization failed: $e');
+    debugPrint('App will continue without crash reporting and analytics.');
+    debugPrint('To enable Firebase, follow instructions in FIREBASE_SETUP.md');
+  }
+
   runApp(const MyApp());
 }
 
@@ -44,6 +81,9 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
+        navigatorObservers: [
+          AnalyticsService.getObserver(),
+        ],
         home: const AuthWrapper(),
       ),
     );

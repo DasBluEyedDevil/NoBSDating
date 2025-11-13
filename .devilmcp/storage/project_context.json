@@ -1,0 +1,593 @@
+{
+  "projects": {
+    "C:\\Users\\dasbl\\AndroidStudioProjects\\NoBSDating": {
+      "root": "C:\\Users\\dasbl\\AndroidStudioProjects\\NoBSDating",
+      "name": "NoBSDating",
+      "directories": [
+        ".",
+        ".changelog",
+        ".devilmcp",
+        ".devilmcp\\storage",
+        ".idea",
+        ".idea\\caches",
+        ".idea\\codeStyles",
+        ".idea\\libraries",
+        "backend",
+        "backend\\auth-service",
+        "backend\\auth-service\\src",
+        "backend\\auth-service\\src\\middleware",
+        "backend\\chat-service",
+        "backend\\chat-service\\src",
+        "backend\\chat-service\\src\\middleware",
+        "backend\\migrations",
+        "backend\\profile-service",
+        "backend\\profile-service\\src",
+        "backend\\profile-service\\src\\middleware",
+        "backend\\seed-data",
+        "database",
+        "docs",
+        "frontend",
+        "frontend\\android",
+        "frontend\\android\\app",
+        "frontend\\android\\app\\src",
+        "frontend\\android\\app\\src\\main",
+        "frontend\\ios",
+        "frontend\\ios\\Runner",
+        "frontend\\lib",
+        "frontend\\lib\\config",
+        "frontend\\lib\\constants",
+        "frontend\\lib\\models",
+        "frontend\\lib\\screens",
+        "frontend\\lib\\services",
+        "frontend\\lib\\utils",
+        "frontend\\lib\\widgets",
+        "scripts"
+      ],
+      "files": {
+        "BETA_READINESS_REPORT.md": {
+          "type": ".md",
+          "lines": 649,
+          "size": 20096,
+          "language": "Markdown"
+        },
+        "DEVELOPER_INSTRUCTIONS_FIREBASE.md": {
+          "type": ".md",
+          "lines": 243,
+          "size": 7015,
+          "language": "Markdown"
+        },
+        "docker-compose.yml": {
+          "type": ".yml",
+          "lines": 62,
+          "size": 1895,
+          "language": "YAML"
+        },
+        "FIREBASE_IMPLEMENTATION_SUMMARY.md": {
+          "type": ".md",
+          "lines": 323,
+          "size": 10365,
+          "language": "Markdown"
+        },
+        "FIREBASE_SETUP.md": {
+          "type": ".md",
+          "lines": 313,
+          "size": 8600,
+          "language": "Markdown"
+        },
+        "PHASE1_COMPLETION_SUMMARY.md": {
+          "type": ".md",
+          "lines": 477,
+          "size": 15600,
+          "language": "Markdown"
+        },
+        "PRIVACY_POLICY.md": {
+          "type": ".md",
+          "lines": 223,
+          "size": 8628,
+          "language": "Markdown"
+        },
+        "railway-env-vars.txt": {
+          "type": ".txt",
+          "lines": 35,
+          "size": 972,
+          "language": "Unknown"
+        },
+        "RAILWAY_DEPLOYMENT.md": {
+          "type": ".md",
+          "lines": 813,
+          "size": 18192,
+          "language": "Markdown"
+        },
+        "RAILWAY_QUICKSTART.md": {
+          "type": ".md",
+          "lines": 272,
+          "size": 7055,
+          "language": "Markdown"
+        },
+        "README.md": {
+          "type": ".md",
+          "lines": 192,
+          "size": 5177,
+          "language": "Markdown"
+        },
+        "SAFETY_FEATURES_IMPLEMENTATION.md": {
+          "type": ".md",
+          "lines": 462,
+          "size": 14628,
+          "language": "Markdown"
+        },
+        "SECURITY_QUICK_REFERENCE.md": {
+          "type": ".md",
+          "lines": 225,
+          "size": 7506,
+          "language": "Markdown"
+        },
+        "SECURITY_UPDATES_SUMMARY.md": {
+          "type": ".md",
+          "lines": 419,
+          "size": 13762,
+          "language": "Markdown"
+        },
+        "start-backend.sh": {
+          "type": ".sh",
+          "lines": 5,
+          "size": 141,
+          "language": "Shell"
+        },
+        "TERMS_OF_SERVICE.md": {
+          "type": ".md",
+          "lines": 413,
+          "size": 13813,
+          "language": "Markdown"
+        },
+        "TESTING.md": {
+          "type": ".md",
+          "lines": 605,
+          "size": 16134,
+          "language": "Markdown"
+        },
+        "UX_IMPROVEMENTS_SUMMARY.md": {
+          "type": ".md",
+          "lines": 602,
+          "size": 19152,
+          "language": "Markdown"
+        },
+        ".changelog\\2025-11-13_security_jwt_auth.md": {
+          "type": ".md",
+          "lines": 257,
+          "size": 7797,
+          "language": "Markdown"
+        },
+        ".devilmcp\\storage\\decisions.json": {
+          "type": ".json",
+          "lines": 140,
+          "size": 5160,
+          "language": "JSON"
+        },
+        ".devilmcp\\storage\\project_context.json": {
+          "type": ".json",
+          "lines": 469,
+          "size": 12853,
+          "language": "JSON"
+        },
+        ".devilmcp\\storage\\thoughts.json": {
+          "type": ".json",
+          "lines": 59,
+          "size": 2039,
+          "language": "JSON"
+        },
+        ".idea\\copilot.data.migration.agent.xml": {
+          "type": ".xml",
+          "lines": 6,
+          "size": 195,
+          "language": "Unknown"
+        },
+        ".idea\\copilot.data.migration.ask.xml": {
+          "type": ".xml",
+          "lines": 6,
+          "size": 193,
+          "language": "Unknown"
+        },
+        ".idea\\copilot.data.migration.ask2agent.xml": {
+          "type": ".xml",
+          "lines": 6,
+          "size": 199,
+          "language": "Unknown"
+        },
+        ".idea\\copilot.data.migration.edit.xml": {
+          "type": ".xml",
+          "lines": 6,
+          "size": 194,
+          "language": "Unknown"
+        },
+        ".idea\\libraries.xml": {
+          "type": ".xml",
+          "lines": 32,
+          "size": 1939,
+          "language": "Unknown"
+        },
+        ".idea\\markdown.xml": {
+          "type": ".xml",
+          "lines": 8,
+          "size": 314,
+          "language": "Unknown"
+        },
+        ".idea\\misc.xml": {
+          "type": ".xml",
+          "lines": 5,
+          "size": 133,
+          "language": "Unknown"
+        },
+        ".idea\\modules.xml": {
+          "type": ".xml",
+          "lines": 8,
+          "size": 279,
+          "language": "Unknown"
+        },
+        ".idea\\vcs.xml": {
+          "type": ".xml",
+          "lines": 6,
+          "size": 172,
+          "language": "Unknown"
+        },
+        ".idea\\workspace.xml": {
+          "type": ".xml",
+          "lines": 128,
+          "size": 7768,
+          "language": "Unknown"
+        },
+        ".idea\\caches\\deviceStreaming.xml": {
+          "type": ".xml",
+          "lines": 1005,
+          "size": 49402,
+          "language": "Unknown"
+        },
+        ".idea\\codeStyles\\codeStyleConfig.xml": {
+          "type": ".xml",
+          "lines": 5,
+          "size": 153,
+          "language": "Unknown"
+        },
+        ".idea\\codeStyles\\Project.xml": {
+          "type": ".xml",
+          "lines": 117,
+          "size": 3480,
+          "language": "Unknown"
+        },
+        ".idea\\libraries\\Dart_SDK.xml": {
+          "type": ".xml",
+          "lines": 31,
+          "size": 2496,
+          "language": "Unknown"
+        },
+        "backend\\auth-service\\001_create_users_and_profiles.sql": {
+          "type": ".sql",
+          "lines": 40,
+          "size": 1544,
+          "language": "SQL"
+        },
+        "backend\\auth-service\\002_create_matches_and_messages.sql": {
+          "type": ".sql",
+          "lines": 38,
+          "size": 1714,
+          "language": "SQL"
+        },
+        "backend\\auth-service\\003_create_safety_tables.sql": {
+          "type": ".sql",
+          "lines": 50,
+          "size": 1967,
+          "language": "SQL"
+        },
+        "backend\\auth-service\\migrate.js": {
+          "type": ".js",
+          "lines": 99,
+          "size": 3382,
+          "language": "JavaScript"
+        },
+        "backend\\auth-service\\package-lock.json": {
+          "type": ".json",
+          "lines": 3137,
+          "size": 122159,
+          "language": "JSON"
+        },
+        "backend\\auth-service\\package.json": {
+          "type": ".json",
+          "lines": 39,
+          "size": 1008,
+          "language": "JSON"
+        },
+        "backend\\auth-service\\railway.json": {
+          "type": ".json",
+          "lines": 11,
+          "size": 239,
+          "language": "JSON"
+        },
+        "backend\\auth-service\\tsconfig.json": {
+          "type": ".json",
+          "lines": 17,
+          "size": 410,
+          "language": "JSON"
+        },
+        "backend\\auth-service\\src\\index.ts": {
+          "type": ".ts",
+          "lines": 282,
+          "size": 9248,
+          "language": "TypeScript"
+        },
+        "backend\\auth-service\\src\\migrate-endpoint.ts": {
+          "type": ".ts",
+          "lines": 97,
+          "size": 2471,
+          "language": "TypeScript"
+        },
+        "backend\\auth-service\\src\\middleware\\auth.ts": {
+          "type": ".ts",
+          "lines": 77,
+          "size": 2275,
+          "language": "TypeScript"
+        },
+        "backend\\chat-service\\package-lock.json": {
+          "type": ".json",
+          "lines": 2412,
+          "size": 95035,
+          "language": "JSON"
+        },
+        "backend\\chat-service\\package.json": {
+          "type": ".json",
+          "lines": 36,
+          "size": 898,
+          "language": "JSON"
+        },
+        "backend\\chat-service\\railway.json": {
+          "type": ".json",
+          "lines": 11,
+          "size": 239,
+          "language": "JSON"
+        },
+        "backend\\chat-service\\tsconfig.json": {
+          "type": ".json",
+          "lines": 17,
+          "size": 410,
+          "language": "JSON"
+        },
+        "backend\\chat-service\\src\\index.ts": {
+          "type": ".ts",
+          "lines": 623,
+          "size": 20491,
+          "language": "TypeScript"
+        },
+        "backend\\chat-service\\src\\middleware\\auth.ts": {
+          "type": ".ts",
+          "lines": 74,
+          "size": 1892,
+          "language": "TypeScript"
+        },
+        "backend\\chat-service\\src\\middleware\\validation.ts": {
+          "type": ".ts",
+          "lines": 170,
+          "size": 4363,
+          "language": "TypeScript"
+        },
+        "backend\\migrations\\001_create_users_and_profiles.sql": {
+          "type": ".sql",
+          "lines": 40,
+          "size": 1544,
+          "language": "SQL"
+        },
+        "backend\\migrations\\002_create_matches_and_messages.sql": {
+          "type": ".sql",
+          "lines": 38,
+          "size": 1714,
+          "language": "SQL"
+        },
+        "backend\\migrations\\003_create_safety_tables.sql": {
+          "type": ".sql",
+          "lines": 50,
+          "size": 1967,
+          "language": "SQL"
+        },
+        "backend\\migrations\\package-lock.json": {
+          "type": ".json",
+          "lines": 162,
+          "size": 5836,
+          "language": "JSON"
+        },
+        "backend\\migrations\\package.json": {
+          "type": ".json",
+          "lines": 15,
+          "size": 318,
+          "language": "JSON"
+        },
+        "backend\\migrations\\README.md": {
+          "type": ".md",
+          "lines": 164,
+          "size": 4956,
+          "language": "Markdown"
+        },
+        "backend\\migrations\\run_migration.js": {
+          "type": ".js",
+          "lines": 99,
+          "size": 3382,
+          "language": "JavaScript"
+        },
+        "backend\\migrations\\run_migration.sh": {
+          "type": ".sh",
+          "lines": 55,
+          "size": 1550,
+          "language": "Shell"
+        },
+        "backend\\profile-service\\package-lock.json": {
+          "type": ".json",
+          "lines": 2384,
+          "size": 94043,
+          "language": "JSON"
+        },
+        "backend\\profile-service\\package.json": {
+          "type": ".json",
+          "lines": 35,
+          "size": 864,
+          "language": "JSON"
+        },
+        "backend\\profile-service\\railway.json": {
+          "type": ".json",
+          "lines": 11,
+          "size": 239,
+          "language": "JSON"
+        },
+        "backend\\profile-service\\tsconfig.json": {
+          "type": ".json",
+          "lines": 17,
+          "size": 410,
+          "language": "JSON"
+        },
+        "backend\\profile-service\\src\\index.ts": {
+          "type": ".ts",
+          "lines": 274,
+          "size": 8684,
+          "language": "TypeScript"
+        },
+        "backend\\profile-service\\src\\middleware\\auth.ts": {
+          "type": ".ts",
+          "lines": 74,
+          "size": 1892,
+          "language": "TypeScript"
+        },
+        "backend\\profile-service\\src\\middleware\\validation.ts": {
+          "type": ".ts",
+          "lines": 123,
+          "size": 3888,
+          "language": "TypeScript"
+        },
+        "backend\\seed-data\\package-lock.json": {
+          "type": ".json",
+          "lines": 162,
+          "size": 5834,
+          "language": "JSON"
+        },
+        "backend\\seed-data\\package.json": {
+          "type": ".json",
+          "lines": 17,
+          "size": 425,
+          "language": "JSON"
+        },
+        "backend\\seed-data\\README.md": {
+          "type": ".md",
+          "lines": 303,
+          "size": 9731,
+          "language": "Markdown"
+        },
+        "backend\\seed-data\\seed.js": {
+          "type": ".js",
+          "lines": 195,
+          "size": 6361,
+          "language": "JavaScript"
+        },
+        "backend\\seed-data\\seed.sql": {
+          "type": ".sql",
+          "lines": 358,
+          "size": 21025,
+          "language": "SQL"
+        },
+        "database\\init.sql": {
+          "type": ".sql",
+          "lines": 46,
+          "size": 1695,
+          "language": "SQL"
+        },
+        "docs\\API_INTEGRATION.md": {
+          "type": ".md",
+          "lines": 178,
+          "size": 6156,
+          "language": "Markdown"
+        },
+        "docs\\ARCHITECTURE.md": {
+          "type": ".md",
+          "lines": 348,
+          "size": 13701,
+          "language": "Markdown"
+        },
+        "docs\\IMPLEMENTATION.md": {
+          "type": ".md",
+          "lines": 316,
+          "size": 9339,
+          "language": "Markdown"
+        },
+        "docs\\SECURITY.md": {
+          "type": ".md",
+          "lines": 217,
+          "size": 7353,
+          "language": "Markdown"
+        },
+        "docs\\SETUP.md": {
+          "type": ".md",
+          "lines": 391,
+          "size": 9083,
+          "language": "Markdown"
+        },
+        "docs\\SUMMARY.md": {
+          "type": ".md",
+          "lines": 279,
+          "size": 8739,
+          "language": "Markdown"
+        },
+        "frontend\\FIREBASE_QUICKSTART.md": {
+          "type": ".md",
+          "lines": 103,
+          "size": 2861,
+          "language": "Markdown"
+        },
+        "frontend\\pubspec.yaml": {
+          "type": ".yaml",
+          "lines": 58,
+          "size": 1047,
+          "language": "YAML"
+        },
+        "frontend\\android\\app\\src\\main\\AndroidManifest.xml": {
+          "type": ".xml",
+          "lines": 28,
+          "size": 1263,
+          "language": "Unknown"
+        },
+        "scripts\\railway-setup.sh": {
+          "type": ".sh",
+          "lines": 247,
+          "size": 6303,
+          "language": "Shell"
+        }
+      },
+      "file_types": {
+        ".example": 7,
+        ".md": 25,
+        ".yml": 1,
+        ".txt": 1,
+        ".sh": 3,
+        ".json": 19,
+        ".xml": 15,
+        ".iml": 1,
+        ".sql": 8,
+        ".js": 3,
+        ".ts": 9,
+        ".ps1": 5,
+        ".yaml": 1,
+        ".plist": 1,
+        ".dart": 36
+      },
+      "total_files": 140,
+      "total_lines": 22644,
+      "languages": [
+        "JavaScript",
+        "SQL",
+        "Unknown",
+        "Shell",
+        "YAML",
+        "JSON",
+        "TypeScript",
+        "Markdown"
+      ],
+      "analyzed_at": "2025-11-13T11:22:03.097810"
+    }
+  },
+  "file_map": {},
+  "dependencies": {},
+  "last_updated": "2025-11-13T11:22:03.147602"
+}

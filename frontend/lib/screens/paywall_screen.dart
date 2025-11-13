@@ -2,11 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/subscription_service.dart';
 import '../services/auth_service.dart';
+import '../services/analytics_service.dart';
 
-class PaywallScreen extends StatelessWidget {
+class PaywallScreen extends StatefulWidget {
   final bool showBackButton;
+  final String? source;
 
-  const PaywallScreen({super.key, this.showBackButton = false});
+  const PaywallScreen({super.key, this.showBackButton = false, this.source});
+
+  @override
+  State<PaywallScreen> createState() => _PaywallScreenState();
+}
+
+class _PaywallScreenState extends State<PaywallScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Track paywall view
+    AnalyticsService.logPaywallViewed(source: widget.source);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,14 +30,14 @@ class PaywallScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Go Premium'),
-        leading: showBackButton
+        leading: widget.showBackButton
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null,
         actions: [
-          if (!showBackButton)
+          if (!widget.showBackButton)
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () async {

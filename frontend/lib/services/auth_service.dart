@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/app_config.dart';
+import 'analytics_service.dart';
 
 class AuthService extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
@@ -47,7 +48,7 @@ class AuthService extends ChangeNotifier {
           AppleIDAuthorizationScopes.fullName,
         ],
       );
-      
+
       // Send to backend
       final response = await http.post(
         Uri.parse('$baseUrl/auth/apple'),
@@ -56,33 +57,56 @@ class AuthService extends ChangeNotifier {
           'identityToken': credential.identityToken,
         }),
       );
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _token = data['token'];
         _userId = data['userId'];
-        
+
         await _storage.write(key: 'auth_token', value: _token);
         await _storage.write(key: 'user_id', value: _userId);
-        
+
         _isAuthenticated = true;
+
+        // Track successful login
+        await AnalyticsService.logLogin('apple');
+        await AnalyticsService.setUserId(_userId!);
+
         notifyListeners();
         return true;
       }
+
+      // Track failed login
+      await AnalyticsService.logLoginFailed('apple', 'backend_error_${response.statusCode}');
       return false;
     } catch (e) {
       debugPrint('Error signing in with Apple: $e');
+
+      // Track failed login
+      await AnalyticsService.logLoginFailed('apple', e.toString());
       return false;
     }
   }
   
   Future<bool> signInWithGoogle() async {
     try {
+      // Validate Google Client ID is configured in production
+      if (!kDebugMode && !AppConfig.isGoogleClientIdConfigured) {
+        debugPrint('ERROR: Google Client ID is not configured for production!');
+        debugPrint('Please set GOOGLE_CLIENT_ID environment variable.');
+        await AnalyticsService.logLoginFailed('google', 'missing_client_id');
+        return false;
+      }
+
       final account = await _googleSignIn.signIn();
-      if (account == null) return false;
-      
+      if (account == null) {
+        // User cancelled
+        await AnalyticsService.logLoginFailed('google', 'user_cancelled');
+        return false;
+      }
+
       final auth = await account.authentication;
-      
+
       // Send to backend
       final response = await http.post(
         Uri.parse('$baseUrl/auth/google'),
@@ -91,22 +115,33 @@ class AuthService extends ChangeNotifier {
           'idToken': auth.idToken,
         }),
       );
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _token = data['token'];
         _userId = data['userId'];
-        
+
         await _storage.write(key: 'auth_token', value: _token);
         await _storage.write(key: 'user_id', value: _userId);
-        
+
         _isAuthenticated = true;
+
+        // Track successful login
+        await AnalyticsService.logLogin('google');
+        await AnalyticsService.setUserId(_userId!);
+
         notifyListeners();
         return true;
       }
+
+      // Track failed login
+      await AnalyticsService.logLoginFailed('google', 'backend_error_${response.statusCode}');
       return false;
     } catch (e) {
       debugPrint('Error signing in with Google: $e');
+
+      // Track failed login
+      await AnalyticsService.logLoginFailed('google', e.toString());
       return false;
     }
   }

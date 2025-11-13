@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/app_config.dart';
 import 'auth_service.dart';
+import 'analytics_service.dart';
 
 class SafetyService extends ChangeNotifier {
   final AuthService _authService;
@@ -97,6 +98,10 @@ class SafetyService extends ChangeNotifier {
         final data = json.decode(response.body);
         if (data['success'] == true) {
           _blockedUserIds.add(blockedUserId);
+
+          // Track user blocked event
+          await AnalyticsService.logUserBlocked(blockedUserId);
+
           notifyListeners();
         } else {
           throw Exception('Invalid response format');
@@ -170,6 +175,9 @@ class SafetyService extends ChangeNotifier {
         if (data['success'] != true) {
           throw Exception('Invalid response format');
         }
+
+        // Track user reported event
+        await AnalyticsService.logUserReported(reportedUserId, reason);
       } else {
         throw Exception('Failed to report user: ${response.statusCode}');
       }

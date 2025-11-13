@@ -3,6 +3,9 @@ backend/*/node_modules/
 backend/*/dist/
 backend/*/.env
 backend/*/package-lock.json
+backend/*/coverage/
+backend/*/logs/
+backend/*/.nyc_output/
 
 # Frontend
 frontend/.dart_tool/
@@ -16,12 +19,23 @@ frontend/ios/Pods/
 frontend/ios/.symlinks/
 frontend/ios/Flutter/Flutter.framework
 frontend/ios/Flutter/Flutter.podspec
+frontend/ios/Flutter/Generated.xcconfig
+frontend/ios/Flutter/ephemeral/
+frontend/ios/Flutter/flutter_export_environment.sh
+frontend/ios/Runner/GeneratedPluginRegistrant.*
 frontend/ios/.generated/
 frontend/android/.gradle/
 frontend/android/local.properties
+frontend/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
 frontend/android/app/debug
 frontend/android/app/profile
 frontend/android/app/release
+frontend/coverage/
+
+# Firebase Configuration Files (DO NOT COMMIT)
+frontend/android/app/google-services.json
+frontend/ios/Runner/GoogleService-Info.plist
+frontend/lib/firebase_options.dart
 
 # IDEs
 .idea/

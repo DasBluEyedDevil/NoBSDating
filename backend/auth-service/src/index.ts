@@ -274,6 +274,28 @@ if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_TEST_ENDPOINTS =
     }
   });
 
+  // Seed database endpoint (BETA TESTING ONLY)
+  app.post('/auth/seed-test-users', async (req: Request, res: Response) => {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const seedPath = path.join(__dirname, '../../seed-data/seed.sql');
+
+      if (!fs.existsSync(seedPath)) {
+        return res.status(404).json({ success: false, error: 'Seed file not found' });
+      }
+
+      const seedSQL = fs.readFileSync(seedPath, 'utf8');
+      await pool.query(seedSQL);
+
+      res.json({ success: true, message: 'Test users seeded successfully' });
+      logger.info('Test users seeded');
+    } catch (error) {
+      logger.error('Seed error', { error });
+      res.status(500).json({ success: false, error: 'Seed failed' });
+    }
+  });
+
   logger.warn('Test login endpoint enabled (NOT FOR PRODUCTION)');
 }
 

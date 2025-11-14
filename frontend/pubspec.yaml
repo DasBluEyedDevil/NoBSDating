@@ -41,6 +41,7 @@ dependencies:
   shimmer: ^3.0.0
   connectivity_plus: ^7.0.0
   lottie: ^2.7.0
+  flutter_markdown: ^0.7.4+1
 
   # Firebase
   firebase_core: ^3.0.0
@@ -50,6 +51,11 @@ dependencies:
   # Device and App Info (for feedback widget)
   device_info_plus: ^9.1.0
   package_info_plus: ^9.0.0
+
+  # Image handling
+  image_picker: ^1.1.2
+  cached_network_image: ^3.4.1
+  http_parser: ^4.0.2
 
 dev_dependencies:
   flutter_test:
@@ -61,3 +67,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/legal/

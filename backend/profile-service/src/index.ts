@@ -16,11 +16,21 @@ if (process.env.SENTRY_DSN) {
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import multer from 'multer';
 import { Pool } from 'pg';
 import { authMiddleware } from './middleware/auth';
 import { validateProfile, validateProfileUpdate } from './middleware/validation';
 import logger from './utils/logger';
 import { generalLimiter, profileCreationLimiter, discoveryLimiter } from './middleware/rate-limiter';
+import {
+  initializeUploadDirectory,
+  validateImage,
+  processImage,
+  deleteImage,
+  getPhotoIdFromUrl,
+  canUploadMorePhotos,
+  MAX_PHOTOS_PER_PROFILE,
+} from './utils/image-handler';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -55,6 +65,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '10kb' }));
+
+// Serve static files (uploaded images)
+app.use('/uploads', express.static('uploads'));
+
+// Configure multer for file uploads (memory storage for processing with sharp)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    files: 1, // Single file per request
+  },
+});
 
 // Initialize PostgreSQL connection pool with proper configuration
 const pool = new Pool({
@@ -251,6 +273,163 @@ app.delete('/profile/:userId', authMiddleware, generalLimiter, async (req: Reque
   }
 });
 
+// ===== PHOTO UPLOAD ENDPOINTS =====
+
+// Upload photo - Only allow users to upload photos to their own profile
+app.post('/profile/photos/upload', authMiddleware, generalLimiter, upload.single('photo'), async (req: Request, res: Response) => {
+  try {
+    const authenticatedUserId = req.user!.userId;
+
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No file uploaded' });
+    }
+
+    // Validate image
+    const validation = validateImage(req.file);
+    if (!validation.valid) {
+      return res.status(400).json({ success: false, error: validation.error });
+    }
+
+    // Get current profile to check photo count
+    const profileResult = await pool.query(
+      'SELECT photos FROM profiles WHERE user_id = $1',
+      [authenticatedUserId]
+    );
+
+    if (profileResult.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Profile not found' });
+    }
+
+    const currentPhotos = profileResult.rows[0].photos || [];
+
+    // Check photo limit
+    if (!canUploadMorePhotos(currentPhotos.length)) {
+      return res.status(400).json({
+        success: false,
+        error: `Maximum ${MAX_PHOTOS_PER_PROFILE} photos allowed`
+      });
+    }
+
+    // Process and save image
+    const processedImage = await processImage(req.file, authenticatedUserId);
+
+    // Update profile with new photo URL
+    const updatedPhotos = [...currentPhotos, processedImage.url];
+    await pool.query(
+      'UPDATE profiles SET photos = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2',
+      [updatedPhotos, authenticatedUserId]
+    );
+
+    res.json({
+      success: true,
+      photo: {
+        url: processedImage.url,
+        thumbnailUrl: processedImage.thumbnailUrl,
+      },
+      totalPhotos: updatedPhotos.length,
+    });
+  } catch (error) {
+    logger.error('Failed to upload photo', { error, userId: req.user?.userId });
+    res.status(500).json({ success: false, error: 'Failed to upload photo' });
+  }
+});
+
+// Delete photo - Only allow users to delete their own photos
+app.delete('/profile/photos/:photoId', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
+  try {
+    const authenticatedUserId = req.user!.userId;
+    const photoId = req.params.photoId;
+
+    // Get current profile
+    const profileResult = await pool.query(
+      'SELECT photos FROM profiles WHERE user_id = $1',
+      [authenticatedUserId]
+    );
+
+    if (profileResult.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Profile not found' });
+    }
+
+    const currentPhotos: string[] = profileResult.rows[0].photos || [];
+
+    // Find photo URL containing the photoId
+    const photoToDelete = currentPhotos.find(url => url.includes(photoId));
+
+    if (!photoToDelete) {
+      return res.status(404).json({ success: false, error: 'Photo not found' });
+    }
+
+    // Remove photo from array
+    const updatedPhotos = currentPhotos.filter(url => url !== photoToDelete);
+
+    // Update database
+    await pool.query(
+      'UPDATE profiles SET photos = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2',
+      [updatedPhotos, authenticatedUserId]
+    );
+
+    // Delete physical files (best effort - don't fail if files are missing)
+    await deleteImage(photoToDelete);
+
+    res.json({
+      success: true,
+      message: 'Photo deleted',
+      totalPhotos: updatedPhotos.length,
+    });
+  } catch (error) {
+    logger.error('Failed to delete photo', { error, userId: req.user?.userId });
+    res.status(500).json({ success: false, error: 'Failed to delete photo' });
+  }
+});
+
+// Reorder photos - Only allow users to reorder their own photos
+app.put('/profile/photos/reorder', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
+  try {
+    const authenticatedUserId = req.user!.userId;
+    const { photos } = req.body;
+
+    if (!Array.isArray(photos)) {
+      return res.status(400).json({ success: false, error: 'photos must be an array' });
+    }
+
+    // Get current profile to verify all photos belong to user
+    const profileResult = await pool.query(
+      'SELECT photos FROM profiles WHERE user_id = $1',
+      [authenticatedUserId]
+    );
+
+    if (profileResult.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Profile not found' });
+    }
+
+    const currentPhotos: string[] = profileResult.rows[0].photos || [];
+
+    // Verify all provided photos are valid
+    const invalidPhotos = photos.filter(url => !currentPhotos.includes(url));
+    if (invalidPhotos.length > 0) {
+      return res.status(400).json({ success: false, error: 'Invalid photo URLs provided' });
+    }
+
+    // Update database with reordered photos
+    await pool.query(
+      'UPDATE profiles SET photos = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2',
+      [photos, authenticatedUserId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Photos reordered',
+      photos: photos,
+    });
+  } catch (error) {
+    logger.error('Failed to reorder photos', { error, userId: req.user?.userId });
+    res.status(500).json({ success: false, error: 'Failed to reorder photos' });
+  }
+});
+
+// ===== DISCOVERY ENDPOINTS =====
+
 // Get random profiles for discovery - Requires authentication
 app.get('/profiles/discover', authMiddleware, discoveryLimiter, async (req: Request, res: Response) => {
   try {
@@ -300,9 +479,17 @@ app.use((err: any, req: Request, res: Response, next: any) => {
 
 // Only start server if not in test environment
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    logger.info(`Profile service started`, { port: PORT, environment: process.env.NODE_ENV || 'development' });
-  });
+  // Initialize upload directory before starting server
+  initializeUploadDirectory()
+    .then(() => {
+      app.listen(PORT, () => {
+        logger.info(`Profile service started`, { port: PORT, environment: process.env.NODE_ENV || 'development' });
+      });
+    })
+    .catch((error) => {
+      logger.error('Failed to initialize upload directory', { error });
+      process.exit(1);
+    });
 }
 
 // Export for testing

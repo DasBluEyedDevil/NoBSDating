@@ -5,10 +5,12 @@ import '../services/auth_service.dart';
 import '../services/chat_api_service.dart';
 import '../services/profile_api_service.dart';
 import '../services/cache_service.dart';
+import '../services/safety_service.dart';
 import '../models/match.dart';
 import '../models/profile.dart';
 import '../models/message.dart';
 import '../utils/date_utils.dart';
+import '../widgets/user_action_sheet.dart';
 import 'chat_screen.dart';
 
 enum SortOption { recentActivity, newestMatches, nameAZ }
@@ -56,6 +58,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
     final chatService = context.read<ChatApiService>();
     final profileService = context.read<ProfileApiService>();
     final cacheService = context.read<CacheService>();
+    final safetyService = context.read<SafetyService>();
     final userId = authService.userId;
 
     if (userId == null) {
@@ -72,6 +75,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
     });
 
     try {
+      // Load blocked users first
+      await safetyService.loadBlockedUsers();
+
       // Step 1: Load matches (from cache or API)
       List<Match> matches;
       if (!forceRefresh) {
@@ -169,10 +175,17 @@ class _MatchesScreenState extends State<MatchesScreen> {
   /// Get filtered and sorted matches
   List<Match> _getFilteredAndSortedMatches() {
     final authService = context.read<AuthService>();
+    final safetyService = context.read<SafetyService>();
     final userId = authService.userId;
     if (userId == null) return [];
 
     var filteredMatches = _matches;
+
+    // Filter out blocked users
+    filteredMatches = filteredMatches.where((match) {
+      final otherUserId = match.getOtherUserId(userId);
+      return !safetyService.isUserBlocked(otherUserId);
+    }).toList();
 
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
@@ -363,48 +376,24 @@ class _MatchesScreenState extends State<MatchesScreen> {
     if (userId == null) return;
 
     final otherUserId = match.getOtherUserId(userId);
+    final profile = _profiles[otherUserId];
+
+    if (profile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile not available')),
+      );
+      return;
+    }
 
     showModalBottomSheet(
       context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.heart_broken, color: Colors.red),
-              title: const Text('Unmatch'),
-              onTap: () {
-                Navigator.pop(context);
-                _handleUnmatch(match);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.block, color: Colors.orange),
-              title: const Text('Block'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Block feature coming soon')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.report, color: Colors.orange),
-              title: const Text('Report'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Report feature coming soon')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.cancel),
-              title: const Text('Cancel'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
+      builder: (context) => UserActionSheet(
+        otherUserProfile: profile,
+        match: match,
+        onActionComplete: () {
+          // Refresh the matches list after block/unmatch
+          _loadData(forceRefresh: true);
+        },
       ),
     );
   }

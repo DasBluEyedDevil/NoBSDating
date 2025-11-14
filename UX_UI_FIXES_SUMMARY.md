@@ -16,8 +16,9 @@ This document tracks the implementation of fixes identified in the comprehensive
 |----------|----------|--------|
 | **P0** | Legal Compliance | ✅ **COMPLETED** |
 | **P0** | Profile Authorization Bug | ✅ **COMPLETED** |
-| **P0** | Block & Report Features | ⏳ IN PROGRESS |
-| **P0** | Photo Upload System | ⏳ PENDING |
+| **P0** | Block & Report Features | ✅ **COMPLETED** |
+| **P0** | Photo Upload Backend | ✅ **COMPLETED** |
+| **P0** | Photo Upload Frontend | ⏳ PENDING |
 | **P0** | Security Issues | ⏳ PENDING |
 | **P1** | Real-time Messaging | ⏳ PENDING |
 | **P1** | Location Services | ⏳ PENDING |
@@ -120,22 +121,166 @@ res.json({
 
 ---
 
-## In Progress
+### 3. ✅ Block & Report Features (P0 - CRITICAL)
 
-### 3. ⏳ Block & Report Features (P0)
+**Issue:** Block and Report buttons in matches screen showed "coming soon" snackbars. Backend was fully implemented but not connected to frontend.
 
-**Status:** Backend implemented, frontend has stubs that show "coming soon" snackbars
+**Files Changed:**
+- `frontend/lib/screens/matches_screen.dart` (MODIFIED)
+- `frontend/lib/services/safety_service.dart` (already existed)
+- `frontend/lib/widgets/user_action_sheet.dart` (already existed)
+- `frontend/lib/widgets/report_dialog.dart` (already existed)
 
-**Next Steps:**
-1. Check SafetyService implementation in frontend
-2. Wire up Block button to SafetyService.blockUser()
-3. Wire up Report button to SafetyService.reportUser()
-4. Remove "coming soon" snackbars
-5. Test full flow end-to-end
+**Implementation Details:**
+1. **Replaced stub implementations:**
+   - Removed "coming soon" snackbars
+   - Integrated existing UserActionSheet widget
+   - Connected to SafetyService for block/report operations
 
-**Files to Modify:**
-- `frontend/lib/screens/matches_screen.dart` (lines 381-400)
-- Possibly `frontend/lib/services/safety_service.dart`
+2. **Added blocked user filtering:**
+   - Blocked users automatically filtered from matches list
+   - Loads blocked users on matches screen initialization
+   - Real-time updates when blocking occurs
+
+3. **Block functionality:**
+   - Confirmation dialog before blocking
+   - Automatically unmatches blocked user
+   - Shows success feedback
+   - Refreshes matches list after action
+
+4. **Report functionality:**
+   - Comprehensive report dialog with predefined reasons
+   - Optional details field for additional context
+   - Backend analytics tracking
+   - Success confirmation
+
+**Code Changes:**
+```typescript
+// Before (lines 381-400 in matches_screen.dart):
+ScaffoldMessenger.of(context).showSnackBar(
+  const SnackBar(content: Text('Block feature coming soon')),
+);
+
+// After:
+showModalBottomSheet(
+  context: context,
+  builder: (context) => UserActionSheet(
+    otherUserProfile: profile,
+    match: match,
+    onActionComplete: () {
+      _loadData(forceRefresh: true);
+    },
+  ),
+);
+```
+
+**Impact:**
+- Users can now block abusive/unwanted contacts
+- Report system fully functional for moderation
+- Blocked users hidden from discovery and matches
+- Professional UX matching industry standards
+
+**Testing Notes:**
+- Block dialog shows confirmation
+- Report dialog has 7 predefined reason categories
+- Blocked users filtered from matches list
+- Match list refreshes after block/unmatch
+
+---
+
+### 4. ✅ Photo Upload System - Backend (P0 - CRITICAL)
+
+**Issue:** No photo upload functionality existed. This is a critical feature for any dating app.
+
+**Files Changed:**
+- `backend/profile-service/package.json` (MODIFIED - added dependencies)
+- `backend/profile-service/src/utils/image-handler.ts` (NEW)
+- `backend/profile-service/src/index.ts` (MODIFIED - added endpoints)
+
+**Dependencies Added:**
+- `multer@^1.4.5-lts.1` - File upload middleware
+- `sharp@^0.33.0` - High-performance image processing
+- `uuid@^11.0.3` - Generate unique photo IDs
+
+**Implementation Details:**
+
+1. **Image Handler Utility (`image-handler.ts`):**
+   - File validation (type, size, MIME type)
+   - Image optimization and resizing
+   - Thumbnail generation (200x200px)
+   - Large image (1200x1200px, 85% quality JPEG)
+   - Physical file management (save/delete)
+   - Photo count enforcement (max 6 per profile)
+
+2. **Upload Endpoint (`POST /profile/photos/upload`):**
+   - Accepts multipart/form-data with 'photo' field
+   - Validates file size (max 10MB)
+   - Validates file type (JPEG, PNG, HEIC, HEIF, WebP)
+   - Checks photo count limit before processing
+   - Processes image with sharp (resize, optimize, convert to JPEG)
+   - Saves processed image and thumbnail to disk
+   - Updates profile photos array in database
+   - Returns photo URL and thumbnail URL
+
+3. **Delete Endpoint (`DELETE /profile/photos/:photoId`):**
+   - Extracts photo ID from request
+   - Verifies photo belongs to authenticated user
+   - Removes from profile photos array
+   - Deletes physical files from disk (main + thumbnail)
+   - Best-effort cleanup (continues if files missing)
+
+4. **Reorder Endpoint (`PUT /profile/photos/reorder`):**
+   - Accepts array of photo URLs in desired order
+   - Validates all URLs belong to user's profile
+   - Updates photos array in database
+   - Maintains photo integrity
+
+5. **Upload Directory Initialization:**
+   - Creates `uploads/` and `uploads/thumbnails/` directories on startup
+   - Graceful error handling if directories exist
+   - Fails server startup if initialization fails
+
+**Security Features:**
+- JWT authentication required for all endpoints
+- Users can only manage their own photos
+- File type validation prevents malicious uploads
+- File size limits prevent DoS attacks
+- Photo count limits prevent abuse
+- Proper error logging and monitoring
+
+**Image Processing Pipeline:**
+```
+Original Upload (up to 10MB, any supported format)
+    ↓
+Validation (type, size, format)
+    ↓
+Sharp Processing
+    ├→ Large Version (1200x1200px, 85% JPEG quality)
+    └→ Thumbnail (200x200px, 80% JPEG quality, center crop)
+    ↓
+Save to Disk (/uploads/ and /uploads/thumbnails/)
+    ↓
+Update Database (append URL to photos array)
+    ↓
+Return URLs to Client
+```
+
+**Performance Considerations:**
+- Memory storage for processing (no temp files)
+- Progressive JPEG encoding
+- Automatic format conversion to JPEG
+- Efficient resizing algorithms (sharp is 4-5x faster than ImageMagick)
+
+**Storage:**
+- Currently uses local filesystem
+- File naming: `{userId}_{photoId}.jpg`
+- Thumbnail naming: `{userId}_{photoId}_thumb.jpg`
+- TODO: Migrate to S3/CloudFlare Images for production
+
+**Testing Notes:**
+- TypeScript compilation successful ✅
+- Endpoints ready for integration testing
+- Frontend UI implementation pending
 
 ---
 

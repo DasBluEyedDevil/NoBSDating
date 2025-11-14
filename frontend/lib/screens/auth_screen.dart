@@ -8,6 +8,7 @@ import '../constants/spacing.dart';
 import '../constants/text_styles.dart';
 import '../utils/error_handler.dart';
 import 'test_login_screen.dart';
+import 'legal_document_viewer.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -273,7 +274,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 ),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    // TODO: Open terms of service
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const LegalDocumentViewer(
+                                          documentType: LegalDocumentType.termsOfService,
+                                        ),
+                                      ),
+                                    );
                                   },
                               ),
                               const TextSpan(text: ' and '),
@@ -285,7 +293,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 ),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    // TODO: Open privacy policy
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const LegalDocumentViewer(
+                                          documentType: LegalDocumentType.privacyPolicy,
+                                        ),
+                                      ),
+                                    );
                                   },
                               ),
                             ],

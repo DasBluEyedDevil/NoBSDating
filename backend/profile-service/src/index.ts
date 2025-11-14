@@ -125,20 +125,15 @@ app.post('/profile', authMiddleware, profileCreationLimiter, validateProfile, as
   }
 });
 
-// Get profile by userId - Only allow users to view their own profile
+// Get profile by userId - Allow viewing other users' public profiles
+// This endpoint returns public profile data for discovery and matches
 app.get('/profile/:userId', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
   try {
     const requestedUserId = req.params.userId;
     const authenticatedUserId = req.user!.userId;
+    const isOwnProfile = requestedUserId === authenticatedUserId;
 
-    // Authorization check: user can only view their own profile
-    if (requestedUserId !== authenticatedUserId) {
-      return res.status(403).json({
-        success: false,
-        error: 'Forbidden: Cannot access other users\' profiles'
-      });
-    }
-
+    // Fetch profile from database
     const result = await pool.query(
       `SELECT user_id, name, age, bio, photos, interests, created_at, updated_at
        FROM profiles
@@ -152,6 +147,10 @@ app.get('/profile/:userId', authMiddleware, generalLimiter, async (req: Request,
 
     const profile = result.rows[0];
 
+    // Return profile data
+    // Note: Currently all profile fields are public (name, age, bio, photos, interests)
+    // If we add sensitive fields (email, phone, etc.) in the future, we must filter them out
+    // when isOwnProfile is false to maintain privacy
     res.json({
       success: true,
       profile: {
@@ -161,7 +160,8 @@ app.get('/profile/:userId', authMiddleware, generalLimiter, async (req: Request,
         bio: profile.bio,
         photos: profile.photos,
         interests: profile.interests
-      }
+      },
+      isOwnProfile: isOwnProfile
     });
   } catch (error) {
     logger.error('Failed to retrieve profile', { error, requestedUserId: req.params.userId });

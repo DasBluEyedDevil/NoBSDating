@@ -138,7 +138,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 contentPadding: EdgeInsets.zero,
                 dense: true,
               );
-            }).toList(),
+            }),
             const SizedBox(height: 16),
             const Text(
               'Additional details (optional):',

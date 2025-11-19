@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/chat_api_service.dart';
@@ -130,7 +129,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   bool _isNearBottom() {
     if (!_scrollController.hasClients) return true;
     final position = _scrollController.position;
-    final threshold = 100.0;
+    const threshold = 100.0;
     return position.maxScrollExtent - position.pixels < threshold;
   }
 

@@ -59,8 +59,8 @@ void main() {
 
     test('should clear token on logout', () async {
       // Mock storage deletion
-      when(mockStorage.delete(key: 'auth_token')).thenAnswer((_) async => null);
-      when(mockStorage.delete(key: 'user_id')).thenAnswer((_) async => null);
+      when(mockStorage.delete(key: 'auth_token')).thenAnswer((_) async {});
+      when(mockStorage.delete(key: 'user_id')).thenAnswer((_) async {});
 
       // Verify storage delete was called
       expect(mockStorage, isNotNull);

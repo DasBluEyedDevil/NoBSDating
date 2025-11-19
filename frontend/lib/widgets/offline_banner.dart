@@ -119,8 +119,8 @@ class _OfflineWrapperState extends State<OfflineWrapper> {
       // Show snackbar when connection is restored
       if (!isOffline && _isOffline) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
+          const SnackBar(
+            content: Row(
               children: [
                 Icon(Icons.cloud_done, color: Colors.white),
                 SizedBox(width: 8),
@@ -128,7 +128,7 @@ class _OfflineWrapperState extends State<OfflineWrapper> {
               ],
             ),
             backgroundColor: AppColors.success,
-            duration: const Duration(seconds: 2),
+            duration: Duration(seconds: 2),
           ),
         );
       }

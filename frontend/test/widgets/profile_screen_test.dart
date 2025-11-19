@@ -9,12 +9,12 @@ void main() {
       const testBio = 'Love hiking and coffee';
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: Column(
               children: [
-                Text(testName, style: const TextStyle(fontSize: 24)),
-                Text('$testAge', style: const TextStyle(fontSize: 18)),
+                Text(testName, style: TextStyle(fontSize: 24)),
+                Text('$testAge', style: TextStyle(fontSize: 18)),
                 Text(testBio),
               ],
             ),
@@ -118,7 +118,7 @@ void main() {
             body: Center(
               child: isLoading
                   ? const CircularProgressIndicator()
-                  : Text(profileName),
+                  : const Text(profileName),
             ),
           ),
         ),

@@ -200,7 +200,7 @@ class _SafetySettingsScreenState extends State<SafetySettingsScreen> {
                   child: const Text('Unblock'),
                 ),
               );
-            })).toList(),
+            })),
           const Divider(),
           const Padding(
             padding: EdgeInsets.all(16.0),

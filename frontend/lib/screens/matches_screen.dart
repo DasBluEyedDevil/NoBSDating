@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
@@ -649,9 +648,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
               color: Colors.red,
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'Error loading matches',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.red,
@@ -732,9 +731,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
     // Show "no results" state (filtered results are empty)
     if (filteredMatches.isEmpty) {
       return ListView(
-        children: [
-          const SizedBox(height: 100),
-          const Center(
+        children: const [
+          SizedBox(height: 100),
+          Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

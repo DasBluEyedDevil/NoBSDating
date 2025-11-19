@@ -319,10 +319,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 const SizedBox(height: 12),
                 OutlinedButton(
                   onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
+                  child: const Text('Cancel'),
                 ),
               ],
             ],

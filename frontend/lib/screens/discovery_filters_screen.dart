@@ -83,7 +83,7 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Filters cleared', style: TextStyle(color: AppColors.textOnPrimary)),
+          content: Text('Filters cleared', style: const TextStyle(color: Colors.white)),
           backgroundColor: AppColors.info(context),
         ),
       );
@@ -99,9 +99,9 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
         actions: [
           TextButton(
             onPressed: _clearFilters,
-            child: Text(
+            child: const Text(
               'Clear All',
-              style: TextStyle(color: AppColors.textOnPrimary),
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],

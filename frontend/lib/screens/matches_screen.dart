@@ -609,17 +609,25 @@ class _MatchesScreenState extends State<MatchesScreen> {
               },
             )
           else ...[
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                setState(() {
-                  _isSearching = true;
-                });
-              },
+            Semantics(
+              label: 'Search matches',
+              button: true,
+              child: IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () {
+                  setState(() {
+                    _isSearching = true;
+                  });
+                },
+              ),
             ),
-            IconButton(
-              icon: const Icon(Icons.sort),
-              onPressed: _showSortDialog,
+            Semantics(
+              label: 'Sort matches',
+              button: true,
+              child: IconButton(
+                icon: const Icon(Icons.sort),
+                onPressed: _showSortDialog,
+              ),
             ),
           ],
         ],

@@ -6,6 +6,7 @@ import '../services/profile_api_service.dart';
 import '../services/auth_service.dart';
 import '../widgets/photo_manager_widget.dart';
 import '../config/app_colors.dart';
+import '../constants/text_styles.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   final Profile? existingProfile;
@@ -113,7 +114,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         SnackBar(
           content: Text(widget.isFirstTimeSetup
               ? 'Profile created successfully!'
-              : 'Profile updated successfully!'),
+              : 'Profile updated successfully!', style: TextStyle(color: AppColors.textOnPrimary)),
           backgroundColor: AppColors.success(context),
         ),
       );
@@ -124,7 +125,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to save profile: ${e.toString()}'),
+          content: Text('Failed to save profile: ${e.toString()}', style: TextStyle(color: AppColors.textOnPrimary)),
           backgroundColor: AppColors.error(context),
         ),
       );
@@ -160,19 +161,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     color: AppColors.primaryLight,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Welcome!',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTextStyles.h1.copyWith(color: AppColors.textPrimary(context)),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Let\'s set up your profile to get started',
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary(context),
                     ),
                     textAlign: TextAlign.center,
@@ -244,12 +241,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   textCapitalization: TextCapitalization.sentences,
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Interests',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary(context)),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -297,7 +291,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ),
                     child: Text(
                       'No interests added yet. Add some to help others get to know you!',
-                      style: TextStyle(color: AppColors.textSecondary(context)),
+                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary(context)),
                       textAlign: TextAlign.center,
                     ),
                   ),

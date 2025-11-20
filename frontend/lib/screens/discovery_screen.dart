@@ -639,12 +639,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
         appBar: AppBar(
           title: const Text('Discovery'),
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.filter_list,
-                color: hasActiveFilters ? Colors.amber : null,
+            Semantics(
+              label: 'Filter profiles',
+              button: true,
+              child: IconButton(
+                icon: Icon(
+                  Icons.filter_list,
+                  color: hasActiveFilters ? Colors.amber : null,
+                ),
+                onPressed: _navigateToFilters,
               ),
-              onPressed: _navigateToFilters,
             ),
           ],
         ),
@@ -657,12 +661,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
         appBar: AppBar(
           title: const Text('Discovery'),
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.filter_list,
-                color: hasActiveFilters ? Colors.amber : null,
+            Semantics(
+              label: 'Filter profiles',
+              button: true,
+              child: IconButton(
+                icon: Icon(
+                  Icons.filter_list,
+                  color: hasActiveFilters ? Colors.amber : null,
+                ),
+                onPressed: _navigateToFilters,
               ),
-              onPressed: _navigateToFilters,
             ),
           ],
         ),
@@ -696,12 +704,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
         appBar: AppBar(
           title: const Text('Discovery'),
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.filter_list,
-                color: hasActiveFilters ? Colors.amber : null,
+            Semantics(
+              label: 'Filter profiles',
+              button: true,
+              child: IconButton(
+                icon: Icon(
+                  Icons.filter_list,
+                  color: hasActiveFilters ? Colors.amber : null,
+                ),
+                onPressed: _navigateToFilters,
               ),
-              onPressed: _navigateToFilters,
             ),
           ],
         ),
@@ -797,12 +809,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
                 ),
               ),
             ),
-          IconButton(
-            icon: Icon(
-              Icons.filter_list,
-              color: hasActiveFilters ? AppColors.warning(context) : null,
+          Semantics(
+            label: 'Filter profiles',
+            button: true,
+            child: IconButton(
+              icon: Icon(
+                Icons.filter_list,
+                color: hasActiveFilters ? AppColors.warning(context) : null,
+              ),
+              onPressed: _navigateToFilters,
             ),
-            onPressed: _navigateToFilters,
           ),
         ],
       ),
@@ -900,7 +916,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
                                             return Column(
                                               children: [
                                                 SizedBox(
-                                                  height: 300,
+                                                  height: MediaQuery.of(context).size.height * 0.45, // Use relative height
                                                   child: ClipRRect(
                                                     borderRadius: BorderRadius.circular(12),
                                                     child: PageView.builder(

@@ -968,17 +968,21 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  onPressed: _sendMessage,
-                  icon: _isSending
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.send),
-                  color: AppColors.primaryLight, // Keep brand color for action
-                  iconSize: 28,
+                Semantics(
+                  label: 'Send message',
+                  button: true,
+                  child: IconButton(
+                    onPressed: _sendMessage,
+                    icon: _isSending
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.send),
+                    color: AppColors.primaryLight, // Keep brand color for action
+                    iconSize: 28,
+                  ),
                 ),
               ],
             ),

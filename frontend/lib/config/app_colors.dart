@@ -103,6 +103,10 @@ class AppColors {
     return Theme.of(context).colorScheme.onSurface.withOpacity(0.38);
   }
 
+  /// Text color on primary colored backgrounds (e.g., snackbars, buttons)
+  /// Always returns white for good contrast on primary color
+  static const Color textOnPrimary = Colors.white;
+
   // ===== BACKGROUND COLORS =====
 
   /// Card/surface background

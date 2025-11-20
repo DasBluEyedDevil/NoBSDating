@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import '../services/profile_api_service.dart';
 import '../services/auth_service.dart';
+import '../config/app_colors.dart';
 
 /// Simplified Photo Manager Widget for Profile Photos
 /// Displays up to 6 photos in a grid with upload/delete functionality
@@ -60,9 +61,9 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Photo uploaded successfully'),
-              backgroundColor: Colors.green,
+            SnackBar(
+              content: Text('Photo uploaded successfully', style: TextStyle(color: AppColors.textOnPrimary)),
+              backgroundColor: AppColors.success(context),
             ),
           );
         }
@@ -71,7 +72,10 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
       setState(() => _isUploading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload photo: $e')),
+          SnackBar(
+            content: Text('Failed to upload photo: $e', style: TextStyle(color: AppColors.textOnPrimary)),
+            backgroundColor: AppColors.error(context),
+          ),
         );
       }
     }
@@ -90,8 +94,8 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error(context)),
+            child: Text('Delete', style: TextStyle(color: AppColors.textOnPrimary)),
           ),
         ],
       ),
@@ -116,9 +120,9 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Photo deleted successfully'),
-            backgroundColor: Colors.orange,
+          SnackBar(
+            content: Text('Photo deleted successfully', style: TextStyle(color: AppColors.textOnPrimary)),
+            backgroundColor: AppColors.warning(context),
             duration: Duration(seconds: 2),
           ),
         );
@@ -133,8 +137,8 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to delete photo: $e'),
-            backgroundColor: Colors.red,
+            content: Text('Failed to delete photo: $e', style: TextStyle(color: AppColors.textOnPrimary)),
+            backgroundColor: AppColors.error(context),
           ),
         );
       }
@@ -187,9 +191,9 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Add up to 6 photos. First photo will be your profile picture.',
-          style: TextStyle(fontSize: 12, color: Colors.grey),
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context)),
         ),
         const SizedBox(height: 16),
         GridView.builder(
@@ -209,17 +213,17 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
                 onTap: _isUploading ? null : _showPhotoSourceDialog,
                 child: Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey, width: 2),
+                    border: Border.all(color: AppColors.border(context), width: 2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: _isUploading
                       ? const Center(child: CircularProgressIndicator())
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
-                            SizedBox(height: 4),
-                            Text('Add Photo', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                          children: [
+                            Icon(Icons.add_photo_alternate, size: 32, color: AppColors.textSecondary(context)),
+                            const SizedBox(height: 4),
+                            Text('Add Photo', style: TextStyle(fontSize: 10, color: AppColors.textSecondary(context))),
                           ],
                         ),
                 ),
@@ -236,13 +240,13 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
                     '${context.read<ProfileApiService>().baseUrl}${_photos[index]}',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.broken_image, color: Colors.grey),
+                      color: AppColors.surfaceElevated(context),
+                      child: Icon(Icons.broken_image, color: AppColors.textDisabled(context)),
                     ),
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Container(
-                        color: Colors.grey[200],
+                        color: AppColors.surfaceElevated(context),
                         child: Center(
                           child: CircularProgressIndicator(
                             value: loadingProgress.expectedTotalBytes != null
@@ -262,7 +266,7 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.deepPurple,
+                        color: AppColors.primaryLight,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text(
@@ -294,18 +298,18 @@ class _PhotoManagerWidgetState extends State<PhotoManagerWidget> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.orange[50],
+              color: AppColors.warning(context).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.orange, width: 2),
+              border: Border.all(color: AppColors.warning(context), width: 2),
             ),
             child: Row(
-              children: const [
-                Icon(Icons.warning_amber, color: Colors.orange),
-                SizedBox(width: 12),
+              children: [
+                Icon(Icons.warning_amber, color: AppColors.warning(context)),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Add at least one photo to complete your profile',
-                    style: TextStyle(color: Colors.orange),
+                    style: TextStyle(color: AppColors.warning(context)),
                   ),
                 ),
               ],

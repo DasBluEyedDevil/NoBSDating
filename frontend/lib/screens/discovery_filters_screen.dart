@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/discovery_preferences_service.dart';
+import '../config/app_colors.dart';
+import '../constants/text_styles.dart';
 
 class DiscoveryFiltersScreen extends StatefulWidget {
   const DiscoveryFiltersScreen({super.key});
@@ -80,7 +82,10 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Filters cleared')),
+        SnackBar(
+          content: Text('Filters cleared', style: TextStyle(color: AppColors.textOnPrimary)),
+          backgroundColor: AppColors.info(context),
+        ),
       );
       Navigator.pop(context, true);
     }
@@ -94,9 +99,9 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
         actions: [
           TextButton(
             onPressed: _clearFilters,
-            child: const Text(
+            child: Text(
               'Clear All',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: AppColors.textOnPrimary),
             ),
           ),
         ],
@@ -108,12 +113,13 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Age Range Section
-              const Text(
+              Text(
                 'Age Range',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary(context)),
               ),
               const SizedBox(height: 8),
               Card(
+                color: AppColors.surface(context),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -123,10 +129,7 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
                         children: [
                           Text(
                             '$_minAge - $_maxAge years',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textPrimary(context)),
                           ),
                         ],
                       ),
@@ -149,6 +152,7 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
                             _maxAge = values.end.round();
                           });
                         },
+                        activeColor: AppColors.primaryLight,
                       ),
                     ],
                   ),
@@ -158,12 +162,13 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
               const SizedBox(height: 24),
 
               // Distance Section
-              const Text(
+              Text(
                 'Maximum Distance',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary(context)),
               ),
               const SizedBox(height: 8),
               Card(
+                color: AppColors.surface(context),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -173,10 +178,7 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
                         children: [
                           Text(
                             '${_maxDistance.round()} km',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textPrimary(context)),
                           ),
                         ],
                       ),
@@ -192,6 +194,7 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
                             _maxDistance = value;
                           });
                         },
+                        activeColor: AppColors.primaryLight,
                       ),
                     ],
                   ),
@@ -201,12 +204,13 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
               const SizedBox(height: 24),
 
               // Interests Section
-              const Text(
+              Text(
                 'Interests',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary(context)),
               ),
               const SizedBox(height: 8),
               Card(
+                color: AppColors.surface(context),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -216,10 +220,7 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
                         _selectedInterests.isEmpty
                             ? 'No interests selected'
                             : '${_selectedInterests.length} selected',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
+                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary(context)),
                       ),
                       const SizedBox(height: 12),
                       Wrap(
@@ -239,8 +240,11 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
                                 }
                               });
                             },
-                            selectedColor: Colors.deepPurple.shade200,
-                            checkmarkColor: Colors.white,
+                            selectedColor: AppColors.primaryLight.withOpacity(0.2),
+                            checkmarkColor: AppColors.primaryLight,
+                            labelStyle: TextStyle(
+                              color: isSelected ? AppColors.primaryLight : AppColors.textPrimary(context),
+                            ),
                           );
                         }).toList(),
                       ),
@@ -258,12 +262,12 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
                   onPressed: _applyFilters,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.deepPurple,
+                    backgroundColor: AppColors.primaryLight,
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text(
+                  child: Text(
                     'Apply Filters',
-                    style: TextStyle(fontSize: 18),
+                    style: AppTextStyles.button,
                   ),
                 ),
               ),
@@ -271,13 +275,10 @@ class _DiscoveryFiltersScreenState extends State<DiscoveryFiltersScreen> {
               const SizedBox(height: 16),
 
               // Info text
-              const Center(
+              Center(
                 child: Text(
                   'Filters help you find more compatible matches',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary(context)),
                   textAlign: TextAlign.center,
                 ),
               ),

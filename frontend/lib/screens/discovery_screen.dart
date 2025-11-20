@@ -461,10 +461,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Action undone'),
-          duration: Duration(seconds: 1),
-          backgroundColor: Colors.blue,
+        SnackBar(
+          content: const Text('Action undone'),
+          duration: const Duration(seconds: 1),
+          backgroundColor: AppColors.info(context),
         ),
       );
     }
@@ -611,7 +611,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
             'Swipe to interact',
             style: TextStyle(
               fontSize: 14,
-              color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+              color: AppColors.textSecondary(context).withOpacity(0.6),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -639,12 +639,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
         appBar: AppBar(
           title: const Text('Discovery'),
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.filter_list,
-                color: hasActiveFilters ? Colors.amber : null,
+            Semantics(
+              label: 'Filter profiles',
+              button: true,
+              child: IconButton(
+                icon: Icon(
+                  Icons.filter_list,
+                  color: hasActiveFilters ? Colors.amber : null,
+                ),
+                onPressed: _navigateToFilters,
               ),
-              onPressed: _navigateToFilters,
             ),
           ],
         ),
@@ -657,12 +661,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
         appBar: AppBar(
           title: const Text('Discovery'),
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.filter_list,
-                color: hasActiveFilters ? Colors.amber : null,
+            Semantics(
+              label: 'Filter profiles',
+              button: true,
+              child: IconButton(
+                icon: Icon(
+                  Icons.filter_list,
+                  color: hasActiveFilters ? Colors.amber : null,
+                ),
+                onPressed: _navigateToFilters,
               ),
-              onPressed: _navigateToFilters,
             ),
           ],
         ),
@@ -670,13 +678,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              Icon(Icons.error_outline, size: 64, color: AppColors.error(context)),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Text(
                   _errorMessage!,
-                  style: const TextStyle(fontSize: 16, color: Colors.red),
+                  style: TextStyle(fontSize: 16, color: AppColors.error(context)),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -696,12 +704,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
         appBar: AppBar(
           title: const Text('Discovery'),
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.filter_list,
-                color: hasActiveFilters ? Colors.amber : null,
+            Semantics(
+              label: 'Filter profiles',
+              button: true,
+              child: IconButton(
+                icon: Icon(
+                  Icons.filter_list,
+                  color: hasActiveFilters ? Colors.amber : null,
+                ),
+                onPressed: _navigateToFilters,
               ),
-              onPressed: _navigateToFilters,
             ),
           ],
         ),
@@ -790,21 +802,23 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
                     'Filtered',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.black
-                          : Colors.white,
+                      color: AppColors.textPrimary(context), // Changed to textPrimary for better contrast if needed, but warning bg is usually light or dark enough.
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
             ),
-          IconButton(
-            icon: Icon(
-              Icons.filter_list,
-              color: hasActiveFilters ? AppColors.warning(context) : null,
+          Semantics(
+            label: 'Filter profiles',
+            button: true,
+            child: IconButton(
+              icon: Icon(
+                Icons.filter_list,
+                color: hasActiveFilters ? AppColors.warning(context) : null,
+              ),
+              onPressed: _navigateToFilters,
             ),
-            onPressed: _navigateToFilters,
           ),
         ],
       ),
@@ -902,7 +916,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
                                             return Column(
                                               children: [
                                                 SizedBox(
-                                                  height: 300,
+                                                  height: MediaQuery.of(context).size.height * 0.45, // Use relative height
                                                   child: ClipRRect(
                                                     borderRadius: BorderRadius.circular(12),
                                                     child: PageView.builder(
@@ -917,7 +931,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
                                                         final photoUrl = profile.photos![index];
                                                         final profileService = context.read<ProfileApiService>();
                                                         return Hero(
-                                                          tag: 'profile_${profile.userId}_photo_$index',
+                                                          tag: 'profile_${profile.userId}', // Simplified tag for single hero
                                                           child: CachedNetworkImage(
                                                             imageUrl: '${profileService.baseUrl}$photoUrl',
                                                             fit: BoxFit.cover,
@@ -1071,7 +1085,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
                                       ),
                                       decoration: BoxDecoration(
                                         border: Border.all(
-                                          color: Colors.green,
+                                          color: AppColors.success(context),
                                           width: 4,
                                         ),
                                         borderRadius: BorderRadius.circular(8),
@@ -1079,7 +1093,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
                                       child: Text(
                                         'LIKE',
                                         style: TextStyle(
-                                          color: Colors.green,
+                                          color: AppColors.success(context),
                                           fontSize: 32,
                                           fontWeight: FontWeight.bold,
                                           shadows: [
@@ -1108,7 +1122,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
                                       ),
                                       decoration: BoxDecoration(
                                         border: Border.all(
-                                          color: Colors.red,
+                                          color: AppColors.error(context),
                                           width: 4,
                                         ),
                                         borderRadius: BorderRadius.circular(8),
@@ -1116,7 +1130,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with SingleTickerProv
                                       child: Text(
                                         'PASS',
                                         style: TextStyle(
-                                          color: Colors.red,
+                                          color: AppColors.error(context),
                                           fontSize: 32,
                                           fontWeight: FontWeight.bold,
                                           shadows: [

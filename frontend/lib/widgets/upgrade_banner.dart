@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/subscription_service.dart';
 import '../screens/paywall_screen.dart';
+import '../config/app_colors.dart';
 
 class UpgradeBanner extends StatelessWidget {
   const UpgradeBanner({super.key});
@@ -22,7 +23,7 @@ class UpgradeBanner extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.deepPurple.shade600, Colors.deepPurple.shade800],
+          colors: [AppColors.primaryDark, AppColors.primaryLight],
         ),
         boxShadow: [
           BoxShadow(
@@ -38,9 +39,9 @@ class UpgradeBanner extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.star,
-                color: Colors.amber,
+                color: AppColors.premium(context),
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -76,7 +77,7 @@ class UpgradeBanner extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
+                  backgroundColor: AppColors.premium(context),
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   shape: RoundedRectangleBorder(

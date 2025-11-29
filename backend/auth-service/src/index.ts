@@ -300,8 +300,29 @@ ON CONFLICT (id) DO NOTHING;
 
       await pool.query(seedSQL);
 
-      res.json({ success: true, message: 'Test users seeded successfully' });
-      logger.info('Test users seeded');
+      // Grant premium to all test users
+      const premiumSQL = `
+INSERT INTO user_subscriptions (id, user_id, product_id, entitlement_id, is_active, will_renew, period_type, purchased_at, expires_at, store, environment)
+SELECT
+  'sub_' || id,
+  id,
+  'yearly',
+  'No BS Dating Unlimited',
+  true,
+  true,
+  'annual',
+  NOW(),
+  NOW() + INTERVAL '1 year',
+  'test',
+  'sandbox'
+FROM users WHERE id LIKE 'google_test%'
+ON CONFLICT (id) DO UPDATE SET is_active = true, expires_at = NOW() + INTERVAL '1 year';
+      `;
+
+      await pool.query(premiumSQL);
+
+      res.json({ success: true, message: 'Test users seeded with premium access' });
+      logger.info('Test users seeded with premium');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Seed error', { error: errorMessage, fullError: error });
@@ -427,6 +448,26 @@ ON CONFLICT (id) DO NOTHING;
           started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           PRIMARY KEY (match_id, user_id)
         )`,
+
+        // User subscriptions table (for RevenueCat webhook sync)
+        `CREATE TABLE IF NOT EXISTS user_subscriptions (
+          id VARCHAR(255) PRIMARY KEY,
+          user_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          revenuecat_id VARCHAR(255),
+          product_id VARCHAR(255) NOT NULL,
+          entitlement_id VARCHAR(255),
+          is_active BOOLEAN DEFAULT false,
+          will_renew BOOLEAN DEFAULT true,
+          period_type VARCHAR(50),
+          purchased_at TIMESTAMP WITH TIME ZONE,
+          expires_at TIMESTAMP WITH TIME ZONE,
+          store VARCHAR(50),
+          environment VARCHAR(50) DEFAULT 'production',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE INDEX IF NOT EXISTS idx_user_subscriptions_user_id ON user_subscriptions(user_id)`,
+        `CREATE INDEX IF NOT EXISTS idx_user_subscriptions_active ON user_subscriptions(user_id, is_active)`,
 
         // Indexes
         `CREATE INDEX IF NOT EXISTS idx_profiles_location ON profiles(latitude, longitude)`,

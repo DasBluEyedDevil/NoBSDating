@@ -198,6 +198,33 @@ class ProfileApiService extends ChangeNotifier {
     }
   }
 
+  // ===== SEARCH METHODS =====
+
+  /// Search for count of users matching criteria (for free users)
+  Future<int> searchUserCount(Map<String, dynamic> criteria) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/profiles/search/count'),
+        headers: _getAuthHeaders(),
+        body: json.encode(criteria),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          return data['count'] as int? ?? 0;
+        } else {
+          throw Exception('Invalid response format');
+        }
+      } else {
+        throw Exception('Failed to search users: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error searching user count: $e');
+      rethrow;
+    }
+  }
+
   // ===== LOCATION METHODS =====
 
   /// Update user's location

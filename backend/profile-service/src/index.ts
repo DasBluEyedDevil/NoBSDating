@@ -689,6 +689,91 @@ app.get('/profiles/discover', authMiddleware, discoveryLimiter, async (req: Requ
   }
 });
 
+// ===== SEARCH ENDPOINTS (for free users to see user counts) =====
+
+// Search for count of users matching criteria
+app.post('/profiles/search/count', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
+  try {
+    const authenticatedUserId = req.user!.userId;
+    const { maxDistance, genders, sexualPreferences, intents } = req.body;
+
+    // Get current user's location for distance filtering
+    const locationResult = await pool.query(
+      'SELECT latitude, longitude FROM profiles WHERE user_id = $1',
+      [authenticatedUserId]
+    );
+
+    let userLocation: { latitude: number; longitude: number } | null = null;
+    if (locationResult.rows.length > 0 &&
+        locationResult.rows[0].latitude !== null &&
+        locationResult.rows[0].longitude !== null) {
+      userLocation = {
+        latitude: locationResult.rows[0].latitude,
+        longitude: locationResult.rows[0].longitude
+      };
+    }
+
+    // Build WHERE clause conditions
+    const conditions = [
+      'user_id != $1', // Exclude self
+      // Exclude users who blocked me
+      `user_id NOT IN (SELECT user_id FROM blocks WHERE blocked_user_id = $1)`,
+      // Exclude users I blocked
+      `user_id NOT IN (SELECT blocked_user_id FROM blocks WHERE user_id = $1)`
+    ];
+    const params: any[] = [authenticatedUserId];
+    let paramIndex = 2;
+
+    // Distance filter - convert miles to km (1 mile = 1.60934 km)
+    let distanceFilter = '';
+    if (userLocation && maxDistance) {
+      const maxDistanceKm = maxDistance * 1.60934;
+      distanceFilter = `
+        AND latitude IS NOT NULL
+        AND longitude IS NOT NULL
+        AND (
+          6371 * acos(
+            cos(radians($${paramIndex})) * cos(radians(latitude)) *
+            cos(radians(longitude) - radians($${paramIndex + 1})) +
+            sin(radians($${paramIndex})) * sin(radians(latitude))
+          )
+        ) <= $${paramIndex + 2}
+      `;
+      params.push(userLocation.latitude, userLocation.longitude, maxDistanceKm);
+      paramIndex += 3;
+    }
+
+    // Note: Gender, sexual preference, and intent filters would require
+    // those columns to exist in the profiles table. For now, we count
+    // all profiles within distance. These can be added when the schema
+    // is updated to include these fields.
+
+    const whereClause = conditions.join(' AND ');
+
+    const countQuery = `
+      SELECT COUNT(*) as count
+      FROM profiles
+      WHERE ${whereClause}
+      ${distanceFilter}
+    `;
+
+    const result = await pool.query(countQuery, params);
+    const count = parseInt(result.rows[0].count);
+
+    logger.info('Search count executed', {
+      userId: authenticatedUserId,
+      maxDistance,
+      hasLocation: userLocation !== null,
+      count
+    });
+
+    res.json({ success: true, count });
+  } catch (error) {
+    logger.error('Failed to search user count', { error, userId: req.user?.userId });
+    res.status(500).json({ success: false, error: 'Failed to search' });
+  }
+});
+
 // Seed test profiles endpoint (ONLY FOR DEVELOPMENT/TESTING/BETA)
 if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_TEST_ENDPOINTS === 'true') {
   app.post('/profile/seed-test-profiles', async (req: Request, res: Response) => {

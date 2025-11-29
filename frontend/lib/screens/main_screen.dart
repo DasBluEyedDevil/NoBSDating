@@ -9,6 +9,7 @@ import 'discovery_screen.dart';
 import 'matches_screen.dart';
 import 'profile_screen.dart';
 import 'profile_setup_screen.dart';
+import 'search_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final int initialTab;
@@ -23,11 +24,9 @@ class MainScreenState extends State<MainScreen> {
   late int _currentIndex;
 
   void setTab(int index) {
-    if (index >= 0 && index < 3) {
-      setState(() {
-        _currentIndex = index;
-      });
-    }
+    setState(() {
+      _currentIndex = index;
+    });
   }
   
   @override
@@ -97,44 +96,80 @@ class MainScreenState extends State<MainScreen> {
         }
 
         // Profile is complete, show main app
-        final screens = [
-          const DiscoveryScreen(),
-          const MatchesScreen(),
-          const ProfileScreen(),
-        ];
+        // Different navigation based on premium status
+        final hasPremium = subscriptionService.hasPremiumAccess;
+
+        // Premium users: Discovery, Matches, Profile
+        // Free users: Search, Profile
+        final List<Widget> screens;
+        final List<BottomNavigationBarItem> navItems;
+
+        if (hasPremium) {
+          screens = const [
+            DiscoveryScreen(),
+            MatchesScreen(),
+            ProfileScreen(),
+          ];
+          navItems = const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.explore),
+              label: 'Discovery',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: 'Matches',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ];
+        } else {
+          screens = const [
+            SearchScreen(),
+            ProfileScreen(),
+          ];
+          navItems = const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search),
+              label: 'Search',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ];
+        }
+
+        // Ensure current index is valid for current nav items
+        final safeIndex = _currentIndex.clamp(0, screens.length - 1);
+        if (safeIndex != _currentIndex) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            setState(() {
+              _currentIndex = safeIndex;
+            });
+          });
+        }
 
         return Scaffold(
           body: Column(
             children: [
-              // Show upgrade banner if in demo mode
-              const UpgradeBanner(),
+              // Show upgrade banner for free users
+              if (!hasPremium) const UpgradeBanner(),
               // Main content
               Expanded(
-                child: screens[_currentIndex],
+                child: screens[safeIndex],
               ),
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
+            currentIndex: safeIndex,
             onTap: (index) {
               setState(() {
                 _currentIndex = index;
               });
             },
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.explore),
-                label: 'Discovery',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.favorite),
-                label: 'Matches',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: 'Profile',
-              ),
-            ],
+            items: navItems,
           ),
         );
       },

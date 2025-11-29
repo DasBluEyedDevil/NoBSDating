@@ -34,12 +34,15 @@ class Message {
       );
     }
 
+    // Handle both 'timestamp' and 'createdAt' field names
+    final timestampStr = json['timestamp'] ?? json['createdAt'];
+
     return Message(
       id: json['id'] as String,
       matchId: json['matchId'] as String,
       senderId: json['senderId'] as String,
       text: json['text'] as String,
-      timestamp: DateTime.parse(json['timestamp'] as String),
+      timestamp: DateTime.parse(timestampStr as String),
       status: status,
       error: json['error'] as String?,
     );

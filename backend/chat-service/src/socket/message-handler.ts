@@ -133,44 +133,51 @@ export const setupMessageHandlers = (io: SocketServer, socket: SocketWithAuth, p
       // Determine recipient
       const recipientId = match.user_id_1 === userId ? match.user_id_2 : match.user_id_1;
 
-      // Emit to recipient if they're online
-      io.to(`user:${recipientId}`).emit('new_message', messageResponse);
-
-      // Update message status to delivered if recipient is online
-      const recipientSockets = await io.in(`user:${recipientId}`).fetchSockets();
-      if (recipientSockets.length > 0) {
-        await pool.query(
-          'UPDATE messages SET status = $1, delivered_at = $2 WHERE id = $3',
-          ['delivered', new Date(), messageId]
-        );
-        messageResponse.status = 'delivered';
-      } else {
-        // Recipient is offline - send push notification
-        // Get sender name for notification
-        const senderProfileResult = await pool.query(
-          'SELECT name FROM profiles WHERE id = $1',
-          [userId]
-        );
-
-        if (senderProfileResult.rows.length > 0) {
-          const senderName = senderProfileResult.rows[0].name;
-          // Fire and forget - don't await
-          sendMessageNotification(pool, recipientId, senderName, text, matchId).catch(err =>
-            logger.error('Failed to send message push notification', { recipientId, error: err })
-          );
-        }
-      }
-
-      logger.info('Message sent', {
-        messageId,
-        matchId,
-        senderId: userId,
-        recipientId,
-        delivered: recipientSockets.length > 0
-      });
-
-      // Send acknowledgment to sender
+      // Send acknowledgment to sender IMMEDIATELY after insert succeeds
+      // This ensures the client knows the message was saved
       callback?.({ success: true, message: messageResponse });
+
+      // Post-insert operations (non-fatal - message already saved)
+      try {
+        // Emit to recipient if they're online
+        io.to(`user:${recipientId}`).emit('new_message', messageResponse);
+
+        // Update message status to delivered if recipient is online
+        const recipientSockets = await io.in(`user:${recipientId}`).fetchSockets();
+        if (recipientSockets.length > 0) {
+          await pool.query(
+            'UPDATE messages SET status = $1, delivered_at = $2 WHERE id = $3',
+            ['delivered', new Date(), messageId]
+          );
+        } else {
+          // Recipient is offline - send push notification
+          const senderProfileResult = await pool.query(
+            'SELECT name FROM profiles WHERE id = $1',
+            [userId]
+          );
+
+          if (senderProfileResult.rows.length > 0) {
+            const senderName = senderProfileResult.rows[0].name;
+            sendMessageNotification(pool, recipientId, senderName, text, matchId).catch(err =>
+              logger.error('Failed to send message push notification', { recipientId, error: err })
+            );
+          }
+        }
+
+        logger.info('Message sent', {
+          messageId,
+          matchId,
+          senderId: userId,
+          recipientId,
+          delivered: recipientSockets.length > 0
+        });
+      } catch (postInsertError) {
+        // Log but don't fail - message was already saved and client notified
+        logger.warn('Post-insert operations failed', {
+          messageId,
+          error: postInsertError instanceof Error ? postInsertError.message : 'Unknown error'
+        });
+      }
     } catch (error) {
       logger.error('Error sending message', {
         error: error instanceof Error ? error.message : 'Unknown error',

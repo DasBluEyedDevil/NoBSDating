@@ -35,7 +35,7 @@ class DeepLinkService {
   static void _handleDeepLink(BuildContext context, AuthService authService, String link) {
     final uri = Uri.parse(link);
 
-    // Handle email verification: vlvt.app/verify?token=xxx or vlvt://auth/verify?token=xxx
+    // Handle email verification: getvlvt.vip/verify?token=xxx or vlvt://auth/verify?token=xxx
     if (uri.path.contains('verify') || uri.path == '/verify') {
       final token = uri.queryParameters['token'];
       if (token != null) {
@@ -43,7 +43,7 @@ class DeepLinkService {
       }
     }
 
-    // Handle password reset: vlvt.app/reset-password?token=xxx
+    // Handle password reset: getvlvt.vip/reset-password?token=xxx
     if (uri.path.contains('reset-password') || uri.path == '/reset-password') {
       final token = uri.queryParameters['token'];
       if (token != null) {

@@ -43,9 +43,9 @@ class EmailService {
 
     const config: EmailConfig = {
       provider,
-      from: process.env.EMAIL_FROM || 'noreply@vlvt.app',
+      from: process.env.EMAIL_FROM || 'noreply@getvlvt.vip',
       appName: process.env.APP_NAME || 'VLVT',
-      appUrl: process.env.APP_URL || 'http://localhost:3000',
+      appUrl: process.env.APP_URL || 'https://getvlvt.vip',
     };
 
     if (provider === 'smtp') {

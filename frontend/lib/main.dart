@@ -19,6 +19,7 @@ import 'services/deep_link_service.dart';
 import 'screens/auth_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/chat_screen.dart';
+import 'screens/splash_screen.dart';
 
 // Global navigator key for navigation from notification callbacks
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -160,6 +161,8 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
+  bool _showSplash = true;
+
   @override
   void initState() {
     super.initState();
@@ -176,8 +179,19 @@ class _AuthWrapperState extends State<AuthWrapper> {
     super.dispose();
   }
 
+  void _onSplashComplete() {
+    if (mounted) {
+      setState(() => _showSplash = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Show splash screen on first launch
+    if (_showSplash) {
+      return SplashScreen(onComplete: _onSplashComplete);
+    }
+
     final authService = context.watch<AuthService>();
 
     if (authService.isAuthenticated) {

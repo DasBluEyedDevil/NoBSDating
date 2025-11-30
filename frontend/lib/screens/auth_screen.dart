@@ -221,18 +221,10 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.translucent,
         child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark
-                    : AppColors.primaryLight,
-                Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark.withValues(alpha: 0.7)
-                    : AppColors.primaryLight.withValues(alpha: 0.7),
-              ],
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/loginbackground.jpg'),
+              fit: BoxFit.cover,
             ),
           ),
           child: SafeArea(

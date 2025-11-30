@@ -71,6 +71,9 @@ dependencies:
 
   purchases_ui_flutter: ^9.9.9
   app_links: ^6.4.1
+
+  # Video player for splash screen
+  video_player: ^2.9.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

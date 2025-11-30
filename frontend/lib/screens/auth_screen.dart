@@ -261,19 +261,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                           fontWeight: FontWeight.normal,
                         ),
                       ),
-                      Spacing.verticalMd,
-                      // Value proposition
-                      Padding(
-                        padding: Spacing.horizontalPaddingXl,
-                        child: Text(
-                          'Find meaningful connections without the games',
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: Colors.white.withValues(alpha: 0.8),
-                          ),
-                        ),
-                      ),
-                      Spacing.verticalXxl,
+                      Spacing.verticalXl,
                       // Loading indicator or form
                       if (_isLoading)
                         Center(
@@ -494,45 +482,33 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                           ],
                         ),
                         Spacing.verticalXl,
-                        // OAuth buttons row
+                        // OAuth buttons row - icon only
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // Google button
-                            Expanded(
-                              child: _buildOAuthButton(
-                                onPressed: _signInWithGoogle,
-                                icon: Icons.g_mobiledata,
-                                label: 'Google',
-                                iconSize: 32,
-                              ),
+                            _buildOAuthIconButton(
+                              onPressed: _signInWithGoogle,
+                              assetPath: 'assets/images/google_logo.png',
                             ),
-                            Spacing.horizontalMd,
-                            // Apple button (iOS only)
-                            if (Platform.isIOS) ...[
-                              Expanded(
-                                child: _buildOAuthButton(
-                                  onPressed: _signInWithApple,
-                                  icon: Icons.apple,
-                                  label: 'Apple',
-                                ),
-                              ),
-                              Spacing.horizontalMd,
-                            ],
+                            Spacing.horizontalLg,
+                            // Apple button
+                            _buildOAuthIconButton(
+                              onPressed: _signInWithApple,
+                              assetPath: 'assets/images/apple_logo.png',
+                            ),
+                            Spacing.horizontalLg,
                             // Instagram button
-                            Expanded(
-                              child: _buildOAuthButton(
-                                onPressed: () {
-                                  // TODO: Implement Instagram OAuth
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Instagram login - coming soon'),
-                                    ),
-                                  );
-                                },
-                                icon: Icons.camera_alt,
-                                label: 'Instagram',
-                              ),
+                            _buildOAuthIconButton(
+                              onPressed: () {
+                                // TODO: Implement Instagram OAuth
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Instagram login - coming soon'),
+                                  ),
+                                );
+                              },
+                              assetPath: 'assets/images/instagram_logo.png',
                             ),
                           ],
                         ),
@@ -648,37 +624,41 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildOAuthButton({
+  Widget _buildOAuthIconButton({
     required VoidCallback onPressed,
-    required IconData icon,
-    required String label,
-    double iconSize = 24,
+    String? assetPath,
+    IconData? icon,
+    Color? iconColor,
   }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: Spacing.borderRadiusMd,
-        ),
-        elevation: 4,
-        shadowColor: Colors.black.withValues(alpha: 0.3),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: iconSize, color: Colors.black87),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: Colors.black87,
-              fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Center(
+          child: assetPath != null
+              ? Image.asset(
+                  assetPath,
+                  width: 28,
+                  height: 28,
+                )
+              : Icon(
+                  icon,
+                  size: 32,
+                  color: iconColor ?? Colors.black87,
+                ),
+        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter">
-    <option name="additionalArgs" value="--dart-define=USE_PROD_URLS=true" />
+    <option name="additionalArgs" value="--dart-define=USE_PROD_URLS=true --dart-define=REVENUECAT_API_KEY_ANDROID=test_PuuhQUSxNSymRIYEHqJeSVuchDi" />
     <option name="filePath" value="$PROJECT_DIR$/frontend/lib/main.dart" />
     <method v="2" />
   </configuration>

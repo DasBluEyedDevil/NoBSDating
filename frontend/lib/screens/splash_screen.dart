@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 
 class SplashScreen extends StatefulWidget {
   final VoidCallback onComplete;
@@ -10,89 +9,110 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
-  late VideoPlayerController _controller;
-  bool _isInitialized = false;
-  bool _hasCompleted = false;
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _logoController;
+  late AnimationController _fadeController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    _initializeVideo();
+
+    // Logo scale and pulse animation
+    _logoController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _logoController,
+        curve: Curves.elasticOut,
+      ),
+    );
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(
+        parent: _logoController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Fade out animation
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _fadeController,
+        curve: Curves.easeOut,
+      ),
+    );
+
+    // Start the animation sequence
+    _startAnimations();
   }
 
-  Future<void> _initializeVideo() async {
-    _controller = VideoPlayerController.asset('assets/images/splash.mp4');
+  Future<void> _startAnimations() async {
+    // Start logo animation
+    _logoController.forward();
 
-    try {
-      await _controller.initialize();
+    // Wait for logo animation + hold time
+    await Future.delayed(const Duration(milliseconds: 2000));
 
-      if (!mounted) return;
-      setState(() => _isInitialized = true);
+    // Fade out
+    await _fadeController.forward();
 
-      debugPrint('Splash video initialized: ${_controller.value.duration}');
-
-      // Listen for video completion
-      _controller.addListener(_onVideoUpdate);
-
-      // Start playing
-      await _controller.play();
-      debugPrint('Splash video playing');
-    } catch (e) {
-      // If video fails to load, skip splash after a short delay
-      debugPrint('Splash video failed to load: $e');
-      await Future.delayed(const Duration(milliseconds: 500));
-      _complete();
-    }
-  }
-
-  void _onVideoUpdate() {
-    if (_hasCompleted) return;
-
-    final position = _controller.value.position;
-    final duration = _controller.value.duration;
-
-    // Check if video has finished (position is at or near the end)
-    if (duration.inMilliseconds > 0 &&
-        position.inMilliseconds >= duration.inMilliseconds - 100) {
-      debugPrint('Splash video completed');
-      _complete();
-    }
-  }
-
-  void _complete() {
-    if (_hasCompleted) return;
-    _hasCompleted = true;
+    // Complete
     widget.onComplete();
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_onVideoUpdate);
-    _controller.dispose();
+    _logoController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: _isInitialized
-          ? SizedBox.expand(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _controller.value.size.width,
-                  height: _controller.value.size.height,
-                  child: VideoPlayer(_controller),
-                ),
-              ),
-            )
-          : const Center(
-              child: CircularProgressIndicator(
-                color: Colors.white,
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF2D1B4E), // Deep purple
+                Color(0xFF1A0F2E), // Darker purple
+              ],
+            ),
+          ),
+          child: Center(
+            child: AnimatedBuilder(
+              animation: _logoController,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _scaleAnimation.value * _pulseAnimation.value,
+                  child: child,
+                );
+              },
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 200,
+                height: 200,
               ),
             ),
+          ),
+        ),
+      ),
     );
   }
 }

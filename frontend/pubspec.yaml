@@ -71,6 +71,9 @@ dependencies:
 
   purchases_ui_flutter: ^9.9.9
   app_links: ^6.4.1
+
+  # Native splash screen
+  flutter_native_splash: ^2.4.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -85,3 +88,16 @@ flutter:
   assets:
     - assets/legal/
     - assets/images/
+
+# Native splash screen configuration
+flutter_native_splash:
+  color: "#1A0F2E"
+  image: assets/images/logo.png
+  color_dark: "#1A0F2E"
+  image_dark: assets/images/logo.png
+
+  android_12:
+    color: "#1A0F2E"
+    image: assets/images/logo.png
+    color_dark: "#1A0F2E"
+    image_dark: assets/images/logo.png

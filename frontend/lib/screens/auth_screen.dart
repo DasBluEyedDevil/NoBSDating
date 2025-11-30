@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
 import '../services/auth_service.dart';
 import '../constants/spacing.dart';
 import '../constants/text_styles.dart';
 import '../utils/error_handler.dart';
-import 'test_login_screen.dart';
 import 'legal_document_viewer.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
@@ -292,13 +289,13 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 autocorrect: false,
-                                style: const TextStyle(color: Colors.black),
+                                style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
                                   filled: true,
-                                  fillColor: Colors.white,
+                                  fillColor: Colors.white.withValues(alpha: 0.2),
                                   hintText: 'Email',
-                                  hintStyle: TextStyle(color: Colors.grey[600]),
-                                  prefixIcon: Icon(Icons.email_outlined, color: Colors.grey[600]),
+                                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                                  prefixIcon: Icon(Icons.email_outlined, color: Colors.white.withValues(alpha: 0.7)),
                                   border: OutlineInputBorder(
                                     borderRadius: Spacing.borderRadiusMd,
                                     borderSide: BorderSide.none,
@@ -336,17 +333,17 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 controller: _passwordController,
                                 obscureText: _obscurePassword,
                                 autocorrect: false,
-                                style: const TextStyle(color: Colors.black),
+                                style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
                                   filled: true,
-                                  fillColor: Colors.white,
+                                  fillColor: Colors.white.withValues(alpha: 0.2),
                                   hintText: 'Password',
-                                  hintStyle: TextStyle(color: Colors.grey[600]),
-                                  prefixIcon: Icon(Icons.lock_outlined, color: Colors.grey[600]),
+                                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                                  prefixIcon: Icon(Icons.lock_outlined, color: Colors.white.withValues(alpha: 0.7)),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                      color: Colors.grey[600],
+                                      color: Colors.white.withValues(alpha: 0.7),
                                     ),
                                     onPressed: () {
                                       setState(() {
@@ -387,19 +384,21 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                               ),
                               Spacing.verticalMd,
                               // Sign In button
-                              ElevatedButton(
-                                onPressed: _signInWithEmail,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: Spacing.borderRadiusMd,
+                              Center(
+                                child: ElevatedButton(
+                                  onPressed: _signInWithEmail,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 48),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: Spacing.borderRadiusMd,
+                                    ),
+                                    elevation: 4,
+                                    textStyle: AppTextStyles.button,
                                   ),
-                                  elevation: 4,
-                                  textStyle: AppTextStyles.button,
+                                  child: const Text('Sign In'),
                                 ),
-                                child: const Text('Sign In'),
                               ),
                               Spacing.verticalMd,
                               // Forgot password and Create account links
@@ -557,27 +556,6 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                             ),
                           ),
                         ),
-                        // Test users button (development only)
-                        if (kDebugMode) ...[
-                          Spacing.verticalXl,
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const TestLoginScreen(),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.bug_report),
-                            label: const Text('Test Users (Dev Only)'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: BorderSide(color: Colors.white.withValues(alpha: 0.8), width: 2),
-                              padding: Spacing.paddingMd,
-                            ),
-                          ),
-                        ],
                       ],
                     ],
                   ),

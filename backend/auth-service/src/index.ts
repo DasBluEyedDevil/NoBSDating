@@ -261,9 +261,12 @@ app.post('/auth/email/register', authLimiter, async (req: Request, res: Response
     );
 
     if (existingUser.rows.length > 0) {
-      return res.status(409).json({
-        success: false,
-        error: 'An account with this email already exists'
+      // Don't reveal that account exists - return same success message
+      // but don't send verification email (user already has an account)
+      logger.info('Registration attempted for existing email', { email: email.toLowerCase() });
+      return res.json({
+        success: true,
+        message: 'Registration successful. Please check your email to verify your account.'
       });
     }
 
@@ -314,7 +317,7 @@ app.post('/auth/email/register', authLimiter, async (req: Request, res: Response
 });
 
 // Email verification endpoint
-app.get('/auth/email/verify', async (req: Request, res: Response) => {
+app.get('/auth/email/verify', verifyLimiter, async (req: Request, res: Response) => {
   try {
     const { token } = req.query;
 
@@ -469,7 +472,7 @@ app.post('/auth/email/forgot', authLimiter, async (req: Request, res: Response) 
 });
 
 // Reset password endpoint
-app.post('/auth/email/reset', async (req: Request, res: Response) => {
+app.post('/auth/email/reset', authLimiter, async (req: Request, res: Response) => {
   try {
     const { token, newPassword } = req.body;
 
@@ -531,13 +534,14 @@ app.post('/auth/email/resend-verification', authLimiter, async (req: Request, re
     );
 
     if (result.rows.length === 0) {
-      return res.json({ success: true, message: 'If the account exists, a verification email has been sent.' });
+      return res.json({ success: true, message: 'If the account exists and is unverified, a verification email has been sent.' });
     }
 
     const credential = result.rows[0];
 
     if (credential.email_verified) {
-      return res.status(400).json({ success: false, error: 'Email is already verified' });
+      // Don't reveal verification status
+      return res.json({ success: true, message: 'If the account exists and is unverified, a verification email has been sent.' });
     }
 
     const { token: verificationToken, expires: verificationExpires } = generateVerificationToken();

@@ -217,14 +217,17 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.translucent,
-        child: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/loginbackground.jpg'),
-              fit: BoxFit.cover,
+        child: Stack(
+          children: [
+            // Background image - fills entire screen
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/loginbackground.jpg',
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          child: SafeArea(
+            // Content
+            SafeArea(
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: SlideTransition(
@@ -292,7 +295,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
                                   filled: true,
-                                  fillColor: Colors.white.withValues(alpha: 0.2),
+                                  fillColor: Colors.white.withValues(alpha: 0.4),
                                   hintText: 'Email',
                                   hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
                                   prefixIcon: Icon(Icons.email_outlined, color: Colors.white.withValues(alpha: 0.7)),
@@ -336,7 +339,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
                                   filled: true,
-                                  fillColor: Colors.white.withValues(alpha: 0.2),
+                                  fillColor: Colors.white.withValues(alpha: 0.4),
                                   hintText: 'Password',
                                   hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
                                   prefixIcon: Icon(Icons.lock_outlined, color: Colors.white.withValues(alpha: 0.7)),
@@ -562,7 +565,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

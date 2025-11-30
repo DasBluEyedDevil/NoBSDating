@@ -240,33 +240,17 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               opacity: _fadeAnimation,
               child: SlideTransition(
                 position: _slideAnimation,
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: Spacing.paddingLg,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Logo and app name
-                      Container(
-                        padding: Spacing.paddingXl,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.favorite,
-                          size: 100,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Spacing.verticalXl,
-                      Text(
-                        'VLVT',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.displaySmall.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      // Logo
+                      Image.asset(
+                        'assets/images/logo.png',
+                        width: 180,
+                        height: 180,
                       ),
                       Spacing.verticalMd,
                       Text(
@@ -328,11 +312,13 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 autocorrect: false,
+                                style: const TextStyle(color: Colors.black),
                                 decoration: InputDecoration(
                                   filled: true,
                                   fillColor: Colors.white,
                                   hintText: 'Email',
-                                  prefixIcon: const Icon(Icons.email_outlined),
+                                  hintStyle: TextStyle(color: Colors.grey[600]),
+                                  prefixIcon: Icon(Icons.email_outlined, color: Colors.grey[600]),
                                   border: OutlineInputBorder(
                                     borderRadius: Spacing.borderRadiusMd,
                                     borderSide: BorderSide.none,
@@ -370,14 +356,17 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                                 controller: _passwordController,
                                 obscureText: _obscurePassword,
                                 autocorrect: false,
+                                style: const TextStyle(color: Colors.black),
                                 decoration: InputDecoration(
                                   filled: true,
                                   fillColor: Colors.white,
                                   hintText: 'Password',
-                                  prefixIcon: const Icon(Icons.lock_outlined),
+                                  hintStyle: TextStyle(color: Colors.grey[600]),
+                                  prefixIcon: Icon(Icons.lock_outlined, color: Colors.grey[600]),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                      color: Colors.grey[600],
                                     ),
                                     onPressed: () {
                                       setState(() {

@@ -23,6 +23,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.0",
     "apple-signin-auth": "^2.0.0",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
@@ -40,6 +41,7 @@
     "winston": "^3.18.3"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/jest": "^29.5.14",
     "@types/nodemailer": "^7.0.4",
     "@types/pg": "^8.15.6",

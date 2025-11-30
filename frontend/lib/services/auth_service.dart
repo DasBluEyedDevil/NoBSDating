@@ -151,6 +151,229 @@ class AuthService extends ChangeNotifier {
       return false;
     }
   }
+
+  /// Register with email and password
+  Future<Map<String, dynamic>> registerWithEmail(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/email/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        await AnalyticsService.logSignUp('email');
+        return {'success': true, 'message': data['message']};
+      }
+
+      return {
+        'success': false,
+        'error': data['error'] ?? 'Registration failed',
+        'details': data['details'],
+      };
+    } catch (e) {
+      debugPrint('Error registering with email: $e');
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Sign in with email and password
+  Future<Map<String, dynamic>> signInWithEmail(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/email/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        _token = data['token'];
+        _userId = data['userId'];
+
+        await _storage.write(key: 'auth_token', value: _token);
+        await _storage.write(key: 'user_id', value: _userId);
+
+        _isAuthenticated = true;
+
+        await AnalyticsService.logLogin('email');
+        await AnalyticsService.setUserId(_userId!);
+
+        notifyListeners();
+        return {'success': true};
+      }
+
+      if (data['code'] == 'EMAIL_NOT_VERIFIED') {
+        return {'success': false, 'error': data['error'], 'code': 'EMAIL_NOT_VERIFIED'};
+      }
+
+      await AnalyticsService.logLoginFailed('email', 'backend_error_${response.statusCode}');
+      return {'success': false, 'error': data['error'] ?? 'Login failed'};
+    } catch (e) {
+      debugPrint('Error signing in with email: $e');
+      await AnalyticsService.logLoginFailed('email', e.toString());
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Request password reset email
+  Future<bool> forgotPassword(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/email/forgot'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'email': email}),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error requesting password reset: $e');
+      return false;
+    }
+  }
+
+  /// Reset password with token
+  Future<Map<String, dynamic>> resetPassword(String token, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/email/reset'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'token': token,
+          'newPassword': newPassword,
+        }),
+      );
+
+      final data = json.decode(response.body);
+      return {
+        'success': response.statusCode == 200,
+        'message': data['message'] ?? data['error'],
+        'details': data['details'],
+      };
+    } catch (e) {
+      debugPrint('Error resetting password: $e');
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  /// Resend verification email
+  Future<bool> resendVerificationEmail(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/email/resend-verification'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'email': email}),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error resending verification: $e');
+      return false;
+    }
+  }
+
+  /// Verify email with token (called from deep link)
+  Future<bool> verifyEmail(String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/auth/email/verify?token=$token'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _token = data['token'];
+        _userId = data['userId'];
+
+        await _storage.write(key: 'auth_token', value: _token);
+        await _storage.write(key: 'user_id', value: _userId);
+
+        _isAuthenticated = true;
+        notifyListeners();
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      debugPrint('Error verifying email: $e');
+      return false;
+    }
+  }
+
+  /// Sign in with Instagram - returns either auth data or needsEmail flag
+  Future<Map<String, dynamic>> signInWithInstagram(String accessToken) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/instagram'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'accessToken': accessToken}),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        if (data['needsEmail'] == true) {
+          return {
+            'success': true,
+            'needsEmail': true,
+            'tempToken': data['tempToken'],
+            'username': data['username'],
+          };
+        }
+
+        _token = data['token'];
+        _userId = data['userId'];
+
+        await _storage.write(key: 'auth_token', value: _token);
+        await _storage.write(key: 'user_id', value: _userId);
+
+        _isAuthenticated = true;
+
+        await AnalyticsService.logLogin('instagram');
+        await AnalyticsService.setUserId(_userId!);
+
+        notifyListeners();
+        return {'success': true, 'authenticated': true};
+      }
+
+      return {'success': false, 'error': data['error']};
+    } catch (e) {
+      debugPrint('Error signing in with Instagram: $e');
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Complete Instagram registration with email
+  Future<Map<String, dynamic>> completeInstagramRegistration(String tempToken, String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/instagram/complete'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'tempToken': tempToken,
+          'email': email,
+        }),
+      );
+
+      final data = json.decode(response.body);
+      return {
+        'success': response.statusCode == 200,
+        'message': data['message'] ?? data['error'],
+        'userId': data['userId'],
+      };
+    } catch (e) {
+      debugPrint('Error completing Instagram registration: $e');
+      return {'success': false, 'message': e.toString()};
+    }
+  }
   
   Future<void> signOut() async {
     await _storage.delete(key: 'auth_token');

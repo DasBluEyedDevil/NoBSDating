@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../constants/spacing.dart';
-import '../constants/text_styles.dart';
+import '../theme/vlvt_colors.dart';
+import '../theme/vlvt_text_styles.dart';
 import '../utils/error_handler.dart';
 import 'verification_pending_screen.dart';
 
@@ -97,17 +98,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(error.message, style: AppTextStyles.labelMedium),
+                  Text(error.message, style: VlvtTextStyles.labelMedium),
                   if (result['details'] != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       result['details'].toString(),
-                      style: AppTextStyles.caption,
+                      style: VlvtTextStyles.caption,
                     ),
                   ],
                 ],
               ),
-              backgroundColor: AppColors.error(context),
+              backgroundColor: VlvtColors.error,
             ),
           );
         }
@@ -121,12 +122,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(error.message, style: AppTextStyles.labelMedium),
+                Text(error.message, style: VlvtTextStyles.labelMedium),
                 const SizedBox(height: 4),
-                Text(error.guidance, style: AppTextStyles.caption),
+                Text(error.guidance, style: VlvtTextStyles.caption),
               ],
             ),
-            backgroundColor: AppColors.error(context),
+            backgroundColor: VlvtColors.error,
           ),
         );
       }
@@ -150,11 +151,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark
-                    : AppColors.primaryLight,
+                    ? VlvtColors.primaryDark
+                    : VlvtColors.primary,
                 Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark.withValues(alpha: 0.7)
-                    : AppColors.primaryLight.withValues(alpha: 0.7),
+                    ? VlvtColors.primaryDark.withValues(alpha: 0.7)
+                    : VlvtColors.primary.withValues(alpha: 0.7),
               ],
             ),
           ),
@@ -178,7 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Text(
                     'Create Account',
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.displaySmall.copyWith(
+                    style: VlvtTextStyles.displaySmall.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -187,7 +188,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Text(
                     'Join VLVT and start making meaningful connections',
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyMedium.copyWith(
+                    style: VlvtTextStyles.bodyMedium.copyWith(
                       color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
@@ -210,7 +211,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             Spacing.verticalMd,
                             Text(
                               'Creating your account...',
-                              style: AppTextStyles.bodyMedium.copyWith(
+                              style: VlvtTextStyles.bodyMedium.copyWith(
                                 color: Colors.white,
                               ),
                             ),
@@ -244,7 +245,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: Spacing.borderRadiusMd,
-                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                borderSide: const BorderSide(color: VlvtColors.primary, width: 2),
                               ),
                               errorBorder: OutlineInputBorder(
                                 borderRadius: Spacing.borderRadiusMd,
@@ -300,7 +301,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: Spacing.borderRadiusMd,
-                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                borderSide: const BorderSide(color: VlvtColors.primary, width: 2),
                               ),
                               errorBorder: OutlineInputBorder(
                                 borderRadius: Spacing.borderRadiusMd,
@@ -345,7 +346,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   Expanded(
                                     child: Text(
                                       _getPasswordRequirements(_passwordController.text),
-                                      style: AppTextStyles.caption.copyWith(
+                                      style: VlvtTextStyles.caption.copyWith(
                                         color: Colors.white,
                                       ),
                                     ),
@@ -385,7 +386,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: Spacing.borderRadiusMd,
-                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                borderSide: const BorderSide(color: VlvtColors.primary, width: 2),
                               ),
                               errorBorder: OutlineInputBorder(
                                 borderRadius: Spacing.borderRadiusMd,
@@ -411,14 +412,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ElevatedButton(
                             onPressed: _register,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: VlvtColors.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: Spacing.borderRadiusMd,
                               ),
                               elevation: 4,
-                              textStyle: AppTextStyles.button,
+                              textStyle: VlvtTextStyles.button,
                             ),
                             child: const Text('Create Account'),
                           ),
@@ -429,7 +430,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               onPressed: () => Navigator.pop(context),
                               child: Text(
                                 'Already have an account? Sign in',
-                                style: AppTextStyles.bodySmall.copyWith(
+                                style: VlvtTextStyles.bodySmall.copyWith(
                                   color: Colors.white,
                                   decoration: TextDecoration.underline,
                                   fontWeight: FontWeight.w600,

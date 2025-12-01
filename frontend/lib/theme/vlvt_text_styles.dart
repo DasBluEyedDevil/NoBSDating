@@ -259,4 +259,22 @@ class VlvtTextStyles {
     height: 1.4,
     color: VlvtColors.crimson,
   );
+
+  /// Success text
+  static const TextStyle success = TextStyle(
+    fontFamily: fontFamilyBody,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+    color: VlvtColors.success,
+  );
+
+  /// Warning text
+  static const TextStyle warning = TextStyle(
+    fontFamily: fontFamilyBody,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+    color: VlvtColors.warning,
+  );
 }

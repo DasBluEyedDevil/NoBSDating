@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../constants/spacing.dart';
-import '../constants/text_styles.dart';
+import '../theme/vlvt_colors.dart';
+import '../theme/vlvt_text_styles.dart';
 import '../utils/error_handler.dart';
 import 'verification_pending_screen.dart';
 
@@ -92,12 +93,12 @@ class _InstagramEmailScreenState extends State<InstagramEmailScreen> with Single
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(error.message, style: AppTextStyles.labelMedium),
+                  Text(error.message, style: VlvtTextStyles.labelMedium),
                   const SizedBox(height: 4),
-                  Text(error.guidance, style: AppTextStyles.caption),
+                  Text(error.guidance, style: VlvtTextStyles.caption),
                 ],
               ),
-              backgroundColor: AppColors.error(context),
+              backgroundColor: VlvtColors.error,
             ),
           );
         }
@@ -111,12 +112,12 @@ class _InstagramEmailScreenState extends State<InstagramEmailScreen> with Single
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(error.message, style: AppTextStyles.labelMedium),
+                Text(error.message, style: VlvtTextStyles.labelMedium),
                 const SizedBox(height: 4),
-                Text(error.guidance, style: AppTextStyles.caption),
+                Text(error.guidance, style: VlvtTextStyles.caption),
               ],
             ),
-            backgroundColor: AppColors.error(context),
+            backgroundColor: VlvtColors.error,
           ),
         );
       }
@@ -144,11 +145,11 @@ class _InstagramEmailScreenState extends State<InstagramEmailScreen> with Single
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark
-                    : AppColors.primaryLight,
+                    ? VlvtColors.primaryDark
+                    : VlvtColors.primary,
                 Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark.withValues(alpha: 0.7)
-                    : AppColors.primaryLight.withValues(alpha: 0.7),
+                    ? VlvtColors.primaryDark.withValues(alpha: 0.7)
+                    : VlvtColors.primary.withValues(alpha: 0.7),
               ],
             ),
           ),
@@ -181,7 +182,7 @@ class _InstagramEmailScreenState extends State<InstagramEmailScreen> with Single
                       Text(
                         'Welcome, @${widget.username}!',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.displaySmall.copyWith(
+                        style: VlvtTextStyles.displaySmall.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -193,7 +194,7 @@ class _InstagramEmailScreenState extends State<InstagramEmailScreen> with Single
                         child: Text(
                           'Instagram doesn\'t share your email. Please provide one to complete your account.',
                           textAlign: TextAlign.center,
-                          style: AppTextStyles.bodyMedium.copyWith(
+                          style: VlvtTextStyles.bodyMedium.copyWith(
                             color: Colors.white.withValues(alpha: 0.9),
                           ),
                         ),
@@ -217,7 +218,7 @@ class _InstagramEmailScreenState extends State<InstagramEmailScreen> with Single
                                 Spacing.verticalMd,
                                 Text(
                                   'Completing registration...',
-                                  style: AppTextStyles.bodyMedium.copyWith(
+                                  style: VlvtTextStyles.bodyMedium.copyWith(
                                     color: Colors.white,
                                   ),
                                 ),
@@ -252,7 +253,7 @@ class _InstagramEmailScreenState extends State<InstagramEmailScreen> with Single
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: Spacing.borderRadiusMd,
-                                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                    borderSide: const BorderSide(color: VlvtColors.primary, width: 2),
                                   ),
                                   errorBorder: OutlineInputBorder(
                                     borderRadius: Spacing.borderRadiusMd,
@@ -278,14 +279,14 @@ class _InstagramEmailScreenState extends State<InstagramEmailScreen> with Single
                               ElevatedButton(
                                 onPressed: _completeRegistration,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: VlvtColors.primary,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: Spacing.borderRadiusMd,
                                   ),
                                   elevation: 4,
-                                  textStyle: AppTextStyles.button,
+                                  textStyle: VlvtTextStyles.button,
                                 ),
                                 child: const Text('Continue'),
                               ),
@@ -300,7 +301,7 @@ class _InstagramEmailScreenState extends State<InstagramEmailScreen> with Single
                                   shape: RoundedRectangleBorder(
                                     borderRadius: Spacing.borderRadiusMd,
                                   ),
-                                  textStyle: AppTextStyles.button,
+                                  textStyle: VlvtTextStyles.button,
                                 ),
                                 child: const Text('Cancel'),
                               ),
@@ -314,7 +315,7 @@ class _InstagramEmailScreenState extends State<InstagramEmailScreen> with Single
                           child: Text(
                             'We\'ll send a verification email to this address to complete your account setup.',
                             textAlign: TextAlign.center,
-                            style: AppTextStyles.caption.copyWith(
+                            style: VlvtTextStyles.caption.copyWith(
                               color: Colors.white.withValues(alpha: 0.7),
                             ),
                           ),

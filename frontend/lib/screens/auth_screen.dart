@@ -4,7 +4,8 @@ import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../constants/spacing.dart';
-import '../constants/text_styles.dart';
+import '../theme/vlvt_colors.dart';
+import '../theme/vlvt_text_styles.dart';
 import '../utils/error_handler.dart';
 import 'legal_document_viewer.dart';
 import 'register_screen.dart';
@@ -82,7 +83,7 @@ class _AuthScreenState extends State<AuthScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Please verify your email address'),
-              backgroundColor: AppColors.warning(context),
+              backgroundColor: VlvtColors.warning,
             ),
           );
         } else {
@@ -92,7 +93,7 @@ class _AuthScreenState extends State<AuthScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(error.message),
-              backgroundColor: AppColors.error(context),
+              backgroundColor: VlvtColors.error,
             ),
           );
         }
@@ -106,12 +107,12 @@ class _AuthScreenState extends State<AuthScreen>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(error.message, style: AppTextStyles.labelMedium),
+                Text(error.message, style: VlvtTextStyles.labelMedium),
                 const SizedBox(height: 4),
-                Text(error.guidance, style: AppTextStyles.caption),
+                Text(error.guidance, style: VlvtTextStyles.caption),
               ],
             ),
-            backgroundColor: AppColors.error(context),
+            backgroundColor: VlvtColors.error,
           ),
         );
       }
@@ -134,7 +135,7 @@ class _AuthScreenState extends State<AuthScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error.message),
-            backgroundColor: AppColors.error(context),
+            backgroundColor: VlvtColors.error,
             action: SnackBarAction(
               label: 'Retry',
               textColor: Colors.white,
@@ -152,12 +153,12 @@ class _AuthScreenState extends State<AuthScreen>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(error.message, style: AppTextStyles.labelMedium),
+                Text(error.message, style: VlvtTextStyles.labelMedium),
                 const SizedBox(height: 4),
-                Text(error.guidance, style: AppTextStyles.caption),
+                Text(error.guidance, style: VlvtTextStyles.caption),
               ],
             ),
-            backgroundColor: AppColors.error(context),
+            backgroundColor: VlvtColors.error,
           ),
         );
       }
@@ -180,7 +181,7 @@ class _AuthScreenState extends State<AuthScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error.message),
-            backgroundColor: AppColors.error(context),
+            backgroundColor: VlvtColors.error,
             action: SnackBarAction(
               label: 'Retry',
               textColor: Colors.white,
@@ -198,12 +199,12 @@ class _AuthScreenState extends State<AuthScreen>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(error.message, style: AppTextStyles.labelMedium),
+                Text(error.message, style: VlvtTextStyles.labelMedium),
                 const SizedBox(height: 4),
-                Text(error.guidance, style: AppTextStyles.caption),
+                Text(error.guidance, style: VlvtTextStyles.caption),
               ],
             ),
-            backgroundColor: AppColors.error(context),
+            backgroundColor: VlvtColors.error,
           ),
         );
       }
@@ -307,7 +308,7 @@ class _AuthScreenState extends State<AuthScreen>
                                 Spacing.verticalMd,
                                 Text(
                                   'Signing in...',
-                                  style: AppTextStyles.bodyMedium.copyWith(
+                                  style: VlvtTextStyles.bodyMedium.copyWith(
                                     color: Colors.white,
                                   ),
                                 ),
@@ -457,7 +458,7 @@ class _AuthScreenState extends State<AuthScreen>
                                     borderRadius: Spacing.borderRadiusMd,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppColors.primary.withValues(alpha: 0.5),
+                                        color: VlvtColors.primary.withValues(alpha: 0.5),
                                         blurRadius: 20,
                                         spreadRadius: 2,
                                       ),
@@ -466,7 +467,7 @@ class _AuthScreenState extends State<AuthScreen>
                                   child: ElevatedButton(
                                     onPressed: _signInWithEmail,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
+                                      backgroundColor: VlvtColors.primary,
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 16, horizontal: 64),
@@ -474,7 +475,7 @@ class _AuthScreenState extends State<AuthScreen>
                                         borderRadius: Spacing.borderRadiusMd,
                                       ),
                                       elevation: 0,
-                                      textStyle: AppTextStyles.button.copyWith(
+                                      textStyle: VlvtTextStyles.button.copyWith(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: 1.2,
@@ -499,7 +500,7 @@ class _AuthScreenState extends State<AuthScreen>
                                   },
                                   child: Text(
                                     'Forgot password?',
-                                    style: AppTextStyles.bodySmall.copyWith(
+                                    style: VlvtTextStyles.bodySmall.copyWith(
                                       color: Colors.white.withValues(alpha: 0.8),
                                       decoration: TextDecoration.underline,
                                       decorationColor: Colors.white.withValues(alpha: 0.8),
@@ -524,7 +525,7 @@ class _AuthScreenState extends State<AuthScreen>
                               padding: Spacing.horizontalPaddingMd,
                               child: Text(
                                 'or continue with',
-                                style: AppTextStyles.bodySmall.copyWith(
+                                style: VlvtTextStyles.bodySmall.copyWith(
                                   color: Colors.white.withValues(alpha: 0.8),
                                 ),
                               ),
@@ -575,7 +576,7 @@ class _AuthScreenState extends State<AuthScreen>
                           child: RichText(
                             textAlign: TextAlign.center,
                             text: TextSpan(
-                              style: AppTextStyles.caption.copyWith(
+                              style: VlvtTextStyles.caption.copyWith(
                                 color: Colors.white.withValues(alpha: 0.7),
                               ),
                               children: [
@@ -640,7 +641,7 @@ class _AuthScreenState extends State<AuthScreen>
                             },
                             child: RichText(
                               text: TextSpan(
-                                style: AppTextStyles.bodyMedium.copyWith(
+                                style: VlvtTextStyles.bodyMedium.copyWith(
                                   color: Colors.white.withValues(alpha: 0.8),
                                 ),
                                 children: [

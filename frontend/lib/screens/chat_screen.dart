@@ -14,7 +14,7 @@ import '../models/profile.dart';
 import '../utils/date_utils.dart';
 import '../widgets/user_action_sheet.dart';
 import '../widgets/premium_gate_dialog.dart';
-import '../config/app_colors.dart';
+import '../theme/vlvt_colors.dart';
 
 class ChatScreen extends StatefulWidget {
   final Match? match;
@@ -399,7 +399,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       return Scaffold(
         appBar: AppBar(),
         body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text(_errorMessage!, style: TextStyle(color: AppColors.error(context))),
+          Text(_errorMessage!, style: TextStyle(color: VlvtColors.error)),
           const SizedBox(height: 16),
           ElevatedButton(onPressed: _fetchMatchThenLoadData, child: const Text('Retry')),
         ])),
@@ -443,16 +443,16 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: messagesRemaining > 0 ? AppColors.success(context).withOpacity(0.1) : AppColors.error(context).withOpacity(0.1),
+                    color: messagesRemaining > 0 ? VlvtColors.success.withValues(alpha: 0.1) : VlvtColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: messagesRemaining > 0 ? AppColors.success(context) : AppColors.error(context),
+                      color: messagesRemaining > 0 ? VlvtColors.success : VlvtColors.error,
                     ),
                   ),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.chat, size: 16, color: messagesRemaining > 0 ? AppColors.success(context) : AppColors.error(context)),
+                    Icon(Icons.chat, size: 16, color: messagesRemaining > 0 ? VlvtColors.success : VlvtColors.error),
                     const SizedBox(width: 4),
-                    Text('$messagesRemaining left', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: messagesRemaining > 0 ? AppColors.success(context) : AppColors.error(context))),
+                    Text('$messagesRemaining left', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: messagesRemaining > 0 ? VlvtColors.success : VlvtColors.error)),
                   ]),
                 ),
               ),
@@ -488,11 +488,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   Widget _buildMessagesList(String? currentUserId) {
     if (_messages == null || _messages!.isEmpty) {
       return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(Icons.chat_bubble_outline, size: 80, color: AppColors.textDisabled(context)),
+        Icon(Icons.chat_bubble_outline, size: 80, color: VlvtColors.textMuted),
         const SizedBox(height: 16),
-        Text('No messages yet', style: TextStyle(fontSize: 18, color: AppColors.textSecondary(context))),
+        Text('No messages yet', style: TextStyle(fontSize: 18, color: VlvtColors.textSecondary)),
         const SizedBox(height: 8),
-        Text('Say hi to ${_otherUserProfile?.name ?? 'your match'}!', style: TextStyle(fontSize: 14, color: AppColors.textDisabled(context))),
+        Text('Say hi to ${_otherUserProfile?.name ?? 'your match'}!', style: TextStyle(fontSize: 14, color: VlvtColors.textMuted)),
       ]));
     }
     return RefreshIndicator(
@@ -508,8 +508,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               child: Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(color: AppColors.typingIndicatorBackground(context), borderRadius: BorderRadius.circular(20)),
-                child: Text('...', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.typingIndicatorDots(context), letterSpacing: 2)),
+                decoration: BoxDecoration(color: VlvtColors.typingIndicatorBackground, borderRadius: BorderRadius.circular(20)),
+                child: Text('...', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: VlvtColors.typingIndicatorDots, letterSpacing: 2)),
               ),
             );
           }
@@ -528,7 +528,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         margin: const EdgeInsets.only(bottom: 8),
         child: Row(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.end, children: [
           if (isCurrentUser && isFailed) ...[
-            IconButton(icon: const Icon(Icons.refresh, size: 20), color: AppColors.error(context), onPressed: () => _retryMessage(message), tooltip: 'Retry'),
+            IconButton(icon: const Icon(Icons.refresh, size: 20), color: VlvtColors.error, onPressed: () => _retryMessage(message), tooltip: 'Retry'),
             const SizedBox(width: 4),
           ],
           Flexible(
@@ -536,26 +536,26 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
               decoration: BoxDecoration(
-                color: isFailed ? AppColors.error(context).withOpacity(0.1) : (isCurrentUser ? AppColors.messageBubbleSent(context) : AppColors.messageBubbleReceived(context)),
+                color: isFailed ? VlvtColors.error.withValues(alpha: 0.1) : (isCurrentUser ? VlvtColors.chatBubbleSent : VlvtColors.chatBubbleReceived),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(message.text, style: TextStyle(fontSize: 16, color: isFailed ? AppColors.error(context) : (isCurrentUser ? AppColors.messageBubbleTextSent(context) : AppColors.messageBubbleTextReceived(context)))),
+                Text(message.text, style: TextStyle(fontSize: 16, color: isFailed ? VlvtColors.error : (isCurrentUser ? VlvtColors.chatTextSent : VlvtColors.chatTextReceived))),
                 const SizedBox(height: 4),
                 Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(formatTimestamp(message.timestamp), style: TextStyle(fontSize: 11, color: isFailed ? AppColors.error(context).withOpacity(0.8) : (isCurrentUser ? AppColors.messageTimestampSent(context) : AppColors.messageTimestampReceived(context)))),
+                  Text(formatTimestamp(message.timestamp), style: TextStyle(fontSize: 11, color: isFailed ? VlvtColors.error.withValues(alpha: 0.8) : (isCurrentUser ? VlvtColors.chatTimestampSent : VlvtColors.chatTimestampReceived))),
                   if (isCurrentUser && !isFailed) ...[const SizedBox(width: 4), _buildMessageStatusIcon(message.status)],
                 ]),
                 if (isFailed) ...[
                   const SizedBox(height: 4),
-                  Text('Failed to send', style: TextStyle(fontSize: 11, color: AppColors.error(context), fontWeight: FontWeight.bold)),
+                  Text('Failed to send', style: TextStyle(fontSize: 11, color: VlvtColors.error, fontWeight: FontWeight.bold)),
                 ],
               ]),
             ),
           ),
           if (isCurrentUser && isFailed) ...[
             const SizedBox(width: 4),
-            IconButton(icon: const Icon(Icons.close, size: 20), color: AppColors.error(context), onPressed: () => _deleteFailedMessage(message), tooltip: 'Delete'),
+            IconButton(icon: const Icon(Icons.close, size: 20), color: VlvtColors.error, onPressed: () => _deleteFailedMessage(message), tooltip: 'Delete'),
           ],
         ]),
       ),
@@ -564,11 +564,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   Widget _buildMessageStatusIcon(MessageStatus status) {
     switch (status) {
-      case MessageStatus.sending: return SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 1.5, valueColor: AlwaysStoppedAnimation<Color>(AppColors.messageTimestampSent(context))));
-      case MessageStatus.sent: return Icon(Icons.check, size: 14, color: AppColors.messageTimestampSent(context));
-      case MessageStatus.delivered: return Icon(Icons.done_all, size: 14, color: AppColors.messageTimestampSent(context));
-      case MessageStatus.read: return const Icon(Icons.done_all, size: 14, color: Colors.blue);
-      case MessageStatus.failed: return Icon(Icons.error_outline, size: 14, color: AppColors.error(context));
+      case MessageStatus.sending: return SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 1.5, valueColor: AlwaysStoppedAnimation<Color>(VlvtColors.chatTimestampSent)));
+      case MessageStatus.sent: return Icon(Icons.check, size: 14, color: VlvtColors.chatTimestampSent);
+      case MessageStatus.delivered: return Icon(Icons.done_all, size: 14, color: VlvtColors.chatTimestampSent);
+      case MessageStatus.read: return Icon(Icons.done_all, size: 14, color: VlvtColors.info);
+      case MessageStatus.failed: return Icon(Icons.error_outline, size: 14, color: VlvtColors.error);
     }
   }
 
@@ -578,27 +578,27 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     final showCounter = charCount > _maxCharacters * 0.8;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      decoration: BoxDecoration(color: AppColors.surface(context), boxShadow: [BoxShadow(color: AppColors.border(context).withOpacity(0.1), spreadRadius: 1, blurRadius: 3, offset: const Offset(0, -1))]),
+      decoration: BoxDecoration(color: VlvtColors.surface, boxShadow: [BoxShadow(color: VlvtColors.border.withValues(alpha: 0.1), spreadRadius: 1, blurRadius: 3, offset: const Offset(0, -1))]),
       child: SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           if (showCounter)
             Padding(
               padding: const EdgeInsets.only(right: 16, bottom: 4),
               child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                Text('$charCount/$_maxCharacters', style: TextStyle(fontSize: 12, color: isOverLimit ? AppColors.error(context) : AppColors.textSecondary(context), fontWeight: isOverLimit ? FontWeight.bold : FontWeight.normal)),
+                Text('$charCount/$_maxCharacters', style: TextStyle(fontSize: 12, color: isOverLimit ? VlvtColors.error : VlvtColors.textSecondary, fontWeight: isOverLimit ? FontWeight.bold : FontWeight.normal)),
               ]),
             ),
           Row(children: [
             Expanded(
               child: TextField(
                 controller: _messageController,
-                style: TextStyle(color: AppColors.textPrimary(context)),
+                style: TextStyle(color: VlvtColors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Type a message...',
-                  hintStyle: TextStyle(color: AppColors.textDisabled(context)),
+                  hintStyle: TextStyle(color: VlvtColors.textMuted),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
                   filled: true,
-                  fillColor: AppColors.inputBackground(context),
+                  fillColor: VlvtColors.surfaceInput,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
                 maxLines: null,
@@ -611,7 +611,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             IconButton(
               onPressed: _sendMessage,
               icon: _isSending ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.send),
-              color: AppColors.primaryLight,
+              color: VlvtColors.gold,
               iconSize: 28,
             ),
           ]),

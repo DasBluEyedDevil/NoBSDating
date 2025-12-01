@@ -175,4 +175,52 @@ class VlvtColors {
 
   /// Match notification color
   static const Color match = crimson;
+
+  // ============================================
+  // CHAT & MESSAGING
+  // ============================================
+
+  /// Message bubble for sent messages (current user)
+  static const Color chatBubbleSent = primary;
+
+  /// Message bubble for received messages
+  static const Color chatBubbleReceived = surfaceElevated;
+
+  /// Text color for sent message bubbles
+  static const Color chatTextSent = textOnPrimary;
+
+  /// Text color for received message bubbles
+  static const Color chatTextReceived = textPrimary;
+
+  /// Timestamp for sent messages
+  static Color get chatTimestampSent => Colors.white.withValues(alpha: 0.7);
+
+  /// Timestamp for received messages
+  static Color get chatTimestampReceived => textMuted;
+
+  /// Typing indicator background
+  static const Color typingIndicatorBackground = surfaceElevated;
+
+  /// Typing indicator dots
+  static const Color typingIndicatorDots = textMuted;
+
+  // ============================================
+  // STATUS COLORS (Complete set)
+  // ============================================
+
+  /// Info state - blue
+  static const Color info = Color(0xFF3498DB);
+
+  /// Error state (alias for crimson for semantic clarity)
+  static const Color error = crimson;
+
+  // ============================================
+  // PREMIUM/SUBSCRIPTION
+  // ============================================
+
+  /// Premium UI elements (gold)
+  static const Color premium = gold;
+
+  /// Free tier UI elements
+  static const Color freeTier = textMuted;
 }

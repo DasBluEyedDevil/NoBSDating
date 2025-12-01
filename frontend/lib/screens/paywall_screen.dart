@@ -4,7 +4,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import '../services/subscription_service.dart';
 import '../services/auth_service.dart';
 import '../services/analytics_service.dart';
-import '../config/app_colors.dart';
+import '../theme/vlvt_colors.dart';
 
 class PaywallScreen extends StatefulWidget {
   final bool showBackButton;
@@ -91,7 +91,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
               Icon(
                 Icons.star,
                 size: 80,
-                color: AppColors.premium(context),
+                color: VlvtColors.premium,
               ),
               const SizedBox(height: 16),
               const Text(
@@ -106,9 +106,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.success(context).withValues(alpha: 0.1),
+                  color: VlvtColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.success(context).withValues(alpha: 0.3)),
+                  border: Border.all(color: VlvtColors.success.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   '7-day free trial included',
@@ -116,7 +116,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.success(context),
+                    color: VlvtColors.success,
                   ),
                 ),
               ),
@@ -187,7 +187,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+                    backgroundColor: VlvtColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -226,7 +226,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.textSecondary(context),
+                  color: VlvtColors.textSecondary,
                 ),
               ),
             ],
@@ -254,13 +254,13 @@ class _PaywallScreenState extends State<PaywallScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark ? AppColors.primaryDark : AppColors.primaryLight).withValues(alpha: 0.1)
-              : AppColors.surface(context),
+              ? VlvtColors.primary.withValues(alpha: 0.1)
+              : VlvtColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? (isDark ? AppColors.primaryDark : AppColors.primaryLight)
-                : Colors.grey.withValues(alpha: 0.3),
+                ? VlvtColors.primary
+                : VlvtColors.borderSubtle,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -276,8 +276,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isSelected
-                          ? (isDark ? AppColors.primaryDark : AppColors.primaryLight)
-                          : Colors.grey,
+                          ? VlvtColors.primary
+                          : VlvtColors.textMuted,
                       width: 2,
                     ),
                   ),
@@ -288,7 +288,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                             height: 12,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+                              color: VlvtColors.primary,
                             ),
                           ),
                         )
@@ -306,7 +306,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: isSelected
-                              ? (isDark ? AppColors.primaryDark : AppColors.primaryLight)
+                              ? VlvtColors.gold
                               : null,
                         ),
                       ),
@@ -315,7 +315,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         storeProduct.priceString,
                         style: TextStyle(
                           fontSize: 16,
-                          color: AppColors.textSecondary(context),
+                          color: VlvtColors.textSecondary,
                         ),
                       ),
                       if (savings != null) ...[
@@ -325,7 +325,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.success(context),
+                            color: VlvtColors.success,
                           ),
                         ),
                       ],
@@ -342,7 +342,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.success(context),
+                    color: VlvtColors.success,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -418,7 +418,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             children: [
               Icon(
                 Icons.check_circle,
-                color: AppColors.success(context),
+                color: VlvtColors.success,
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -471,7 +471,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
               Icon(
                 Icons.star,
                 size: 80,
-                color: AppColors.premium(context),
+                color: VlvtColors.premium,
               ),
               const SizedBox(height: 16),
               const Text(
@@ -486,9 +486,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.success(context).withValues(alpha: 0.1),
+                  color: VlvtColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.success(context).withValues(alpha: 0.3)),
+                  border: Border.all(color: VlvtColors.success.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   '7-day free trial included',
@@ -496,7 +496,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.success(context),
+                    color: VlvtColors.success,
                   ),
                 ),
               ),
@@ -504,16 +504,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      isDark ? AppColors.primaryDark : AppColors.primaryLight,
-                      (isDark ? AppColors.primaryDark : AppColors.primaryLight).withValues(alpha: 0.7),
-                    ],
-                  ),
+                  gradient: VlvtColors.goldGradient,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: (isDark ? AppColors.primaryDark : AppColors.primaryLight).withValues(alpha: 0.3),
+                      color: VlvtColors.goldGlow,
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -547,7 +542,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 child: Text(
                   'Subscriptions not available in this build',
                   style: TextStyle(
-                    color: AppColors.textSecondary(context),
+                    color: VlvtColors.textSecondary,
                     fontStyle: FontStyle.italic,
                   ),
                 ),

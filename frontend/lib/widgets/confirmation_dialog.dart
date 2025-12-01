@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/spacing.dart';
-import '../constants/text_styles.dart';
+import '../theme/vlvt_colors.dart';
+import '../theme/vlvt_text_styles.dart';
 
 /// Reusable confirmation dialog for destructive or important actions
 class ConfirmationDialog extends StatelessWidget {
@@ -29,8 +30,8 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final destructiveColor = AppColors.error(context);
-    final warningColor = AppColors.warning(context);
+    final destructiveColor = VlvtColors.error;
+    final warningColor = VlvtColors.warning;
 
     return AlertDialog(
       shape: RoundedRectangleBorder(
@@ -41,7 +42,7 @@ class ConfirmationDialog extends StatelessWidget {
           if (icon != null) ...[
             Icon(
               icon,
-              color: isDestructive ? destructiveColor : AppColors.primary,
+              color: isDestructive ? destructiveColor : VlvtColors.primary,
               size: 28,
             ),
             Spacing.horizontalMd,
@@ -49,7 +50,7 @@ class ConfirmationDialog extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: AppTextStyles.h3,
+              style: VlvtTextStyles.h3,
             ),
           ),
         ],
@@ -60,7 +61,7 @@ class ConfirmationDialog extends StatelessWidget {
         children: [
           Text(
             message,
-            style: AppTextStyles.bodyMedium,
+            style: VlvtTextStyles.bodyMedium,
           ),
           if (consequences != null) ...[
             Spacing.verticalMd,
@@ -88,7 +89,7 @@ class ConfirmationDialog extends StatelessWidget {
                   Expanded(
                     child: Text(
                       consequences!,
-                      style: AppTextStyles.bodySmall.copyWith(
+                      style: VlvtTextStyles.bodySmall.copyWith(
                         color: isDestructive
                             ? destructiveColor
                             : warningColor,
@@ -113,8 +114,8 @@ class ConfirmationDialog extends StatelessWidget {
           ),
           child: Text(
             cancelText,
-            style: AppTextStyles.labelLarge.copyWith(
-              color: AppColors.textSecondary,
+            style: VlvtTextStyles.labelLarge.copyWith(
+              color: VlvtColors.textSecondary,
             ),
           ),
         ),
@@ -127,7 +128,7 @@ class ConfirmationDialog extends StatelessWidget {
           },
           style: ElevatedButton.styleFrom(
             backgroundColor:
-                isDestructive ? destructiveColor : AppColors.primary,
+                isDestructive ? destructiveColor : VlvtColors.primary,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             shape: RoundedRectangleBorder(
@@ -136,7 +137,7 @@ class ConfirmationDialog extends StatelessWidget {
           ),
           child: Text(
             confirmText,
-            style: AppTextStyles.labelLarge.copyWith(color: Colors.white),
+            style: VlvtTextStyles.labelLarge.copyWith(color: Colors.white),
           ),
         ),
       ],

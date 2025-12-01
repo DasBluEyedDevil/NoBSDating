@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../constants/spacing.dart';
-import '../constants/text_styles.dart';
+import '../theme/vlvt_colors.dart';
+import '../theme/vlvt_text_styles.dart';
 
 /// Banner widget that displays when the app is offline
 class OfflineBanner extends StatelessWidget {
@@ -24,7 +25,7 @@ class OfflineBanner extends StatelessWidget {
       curve: Curves.easeInOut,
       height: isOffline ? 48 : 0,
       child: Material(
-        color: AppColors.error(context),
+        color: VlvtColors.error,
         child: SafeArea(
           bottom: false,
           child: Container(
@@ -40,7 +41,7 @@ class OfflineBanner extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'You\'re offline',
-                    style: AppTextStyles.labelMedium.copyWith(
+                    style: VlvtTextStyles.labelMedium.copyWith(
                       color: Colors.white,
                     ),
                   ),
@@ -128,7 +129,7 @@ class _OfflineWrapperState extends State<OfflineWrapper> {
                 Text('Back online'),
               ],
             ),
-            backgroundColor: AppColors.success(context),
+            backgroundColor: VlvtColors.success,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -235,7 +236,7 @@ class ConnectivityChecker {
               Text('No internet connection'),
             ],
           ),
-          backgroundColor: AppColors.error(context),
+          backgroundColor: VlvtColors.error,
           action: SnackBarAction(
             label: 'Dismiss',
             textColor: Colors.white,

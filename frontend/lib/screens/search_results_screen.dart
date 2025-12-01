@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../config/app_colors.dart';
+import '../theme/vlvt_colors.dart';
 import 'paywall_screen.dart';
 
 class SearchResultsScreen extends StatelessWidget {
@@ -21,8 +21,6 @@ class SearchResultsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Search Results'),
@@ -38,13 +36,13 @@ class SearchResultsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: (isDark ? AppColors.primaryDark : AppColors.primaryLight).withValues(alpha: 0.1),
+                  color: VlvtColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.people,
                   size: 80,
-                  color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+                  color: VlvtColors.primary,
                 ),
               ),
               const SizedBox(height: 32),
@@ -55,7 +53,7 @@ class SearchResultsScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 72,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+                  color: VlvtColors.gold,
                 ),
               ),
               const SizedBox(height: 8),
@@ -63,7 +61,7 @@ class SearchResultsScreen extends StatelessWidget {
                 count == 1 ? 'person matches your criteria' : 'people match your criteria',
                 style: TextStyle(
                   fontSize: 18,
-                  color: AppColors.textSecondary(context),
+                  color: VlvtColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -72,7 +70,7 @@ class SearchResultsScreen extends StatelessWidget {
                 'within ${criteria['maxDistance']} miles',
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textDisabled(context),
+                  color: VlvtColors.textMuted,
                 ),
               ),
               const SizedBox(height: 48),
@@ -86,7 +84,7 @@ class SearchResultsScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+                    backgroundColor: VlvtColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -109,7 +107,7 @@ class SearchResultsScreen extends StatelessWidget {
                   'Why do we charge up-front?',
                   style: TextStyle(
                     fontSize: 14,
-                    color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+                    color: VlvtColors.gold,
                     decoration: TextDecoration.underline,
                   ),
                 ),
@@ -140,8 +138,6 @@ class WhyWeChargeDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -158,7 +154,7 @@ class WhyWeChargeDialog extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.favorite,
-                    color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+                    color: VlvtColors.primary,
                   ),
                   const SizedBox(width: 8),
                   const Expanded(
@@ -179,7 +175,7 @@ class WhyWeChargeDialog extends StatelessWidget {
                 'We got tired of "freemium" apps that treat your love life like a slot machine, monetizing every swipe and click. So, we built the antidote.',
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textSecondary(context),
+                  color: VlvtColors.textSecondary,
                   height: 1.5,
                 ),
               ),
@@ -255,7 +251,7 @@ class WhyWeChargeDialog extends StatelessWidget {
                   onPressed: () => Navigator.of(context).pop(),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+                    backgroundColor: VlvtColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -275,15 +271,13 @@ class WhyWeChargeDialog extends StatelessWidget {
     required String title,
     required String content,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(
           icon,
           size: 20,
-          color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+          color: VlvtColors.primary,
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -302,7 +296,7 @@ class WhyWeChargeDialog extends StatelessWidget {
                 content,
                 style: TextStyle(
                   fontSize: 13,
-                  color: AppColors.textSecondary(context),
+                  color: VlvtColors.textSecondary,
                   height: 1.4,
                 ),
               ),

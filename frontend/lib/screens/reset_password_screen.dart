@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../constants/spacing.dart';
-import '../constants/text_styles.dart';
+import '../theme/vlvt_colors.dart';
+import '../theme/vlvt_text_styles.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String token;
@@ -124,11 +125,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark
-                    : AppColors.primaryLight,
+                    ? VlvtColors.primaryDark
+                    : VlvtColors.primary,
                 Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark.withValues(alpha: 0.7)
-                    : AppColors.primaryLight.withValues(alpha: 0.7),
+                    ? VlvtColors.primaryDark.withValues(alpha: 0.7)
+                    : VlvtColors.primary.withValues(alpha: 0.7),
               ],
             ),
           ),
@@ -144,7 +145,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   Text(
                     _resetSuccessful ? 'Password Reset!' : 'Reset Password',
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.displaySmall.copyWith(
+                    style: VlvtTextStyles.displaySmall.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -155,7 +156,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         ? 'Your password has been successfully reset. You can now sign in with your new password.'
                         : 'Enter your new password below',
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyMedium.copyWith(
+                    style: VlvtTextStyles.bodyMedium.copyWith(
                       color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
@@ -180,14 +181,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         ElevatedButton(
                           onPressed: _backToLogin,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: VlvtColors.primary,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: Spacing.borderRadiusMd,
                             ),
                             elevation: 4,
-                            textStyle: AppTextStyles.button,
+                            textStyle: VlvtTextStyles.button,
                           ),
                           child: const Text('Back to Login'),
                         ),
@@ -211,7 +212,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             Spacing.verticalMd,
                             Text(
                               'Resetting your password...',
-                              style: AppTextStyles.bodyMedium.copyWith(
+                              style: VlvtTextStyles.bodyMedium.copyWith(
                                 color: Colors.white,
                               ),
                             ),
@@ -245,7 +246,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                   Expanded(
                                     child: Text(
                                       _errorMessage!,
-                                      style: AppTextStyles.bodySmall.copyWith(
+                                      style: VlvtTextStyles.bodySmall.copyWith(
                                         color: Colors.white,
                                       ),
                                     ),
@@ -289,7 +290,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: Spacing.borderRadiusMd,
-                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                borderSide: const BorderSide(color: VlvtColors.primary, width: 2),
                               ),
                               errorBorder: OutlineInputBorder(
                                 borderRadius: Spacing.borderRadiusMd,
@@ -334,7 +335,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                   Expanded(
                                     child: Text(
                                       _getPasswordRequirements(_passwordController.text),
-                                      style: AppTextStyles.caption.copyWith(
+                                      style: VlvtTextStyles.caption.copyWith(
                                         color: Colors.white,
                                       ),
                                     ),
@@ -374,7 +375,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: Spacing.borderRadiusMd,
-                                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                borderSide: const BorderSide(color: VlvtColors.primary, width: 2),
                               ),
                               errorBorder: OutlineInputBorder(
                                 borderRadius: Spacing.borderRadiusMd,
@@ -400,14 +401,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ElevatedButton(
                             onPressed: _resetPassword,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: VlvtColors.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: Spacing.borderRadiusMd,
                               ),
                               elevation: 4,
-                              textStyle: AppTextStyles.button,
+                              textStyle: VlvtTextStyles.button,
                             ),
                             child: const Text('Reset Password'),
                           ),
@@ -418,7 +419,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               onPressed: _backToLogin,
                               child: Text(
                                 'Back to Login',
-                                style: AppTextStyles.bodySmall.copyWith(
+                                style: VlvtTextStyles.bodySmall.copyWith(
                                   color: Colors.white,
                                   decoration: TextDecoration.underline,
                                   fontWeight: FontWeight.w600,

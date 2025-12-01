@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import '../services/auth_service.dart';
 import '../constants/spacing.dart';
-import '../constants/text_styles.dart';
+import '../theme/vlvt_colors.dart';
+import '../theme/vlvt_text_styles.dart';
 import '../utils/error_handler.dart';
 
 class VerificationPendingScreen extends StatefulWidget {
@@ -86,14 +87,14 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Verification email sent! Please check your inbox.'),
-              backgroundColor: AppColors.success(context),
+              backgroundColor: VlvtColors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Failed to send verification email. Please try again.'),
-              backgroundColor: AppColors.error(context),
+              backgroundColor: VlvtColors.error,
             ),
           );
         }
@@ -107,12 +108,12 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(error.message, style: AppTextStyles.labelMedium),
+                Text(error.message, style: VlvtTextStyles.labelMedium),
                 const SizedBox(height: 4),
-                Text(error.guidance, style: AppTextStyles.caption),
+                Text(error.guidance, style: VlvtTextStyles.caption),
               ],
             ),
-            backgroundColor: AppColors.error(context),
+            backgroundColor: VlvtColors.error,
           ),
         );
       }
@@ -140,11 +141,11 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark
-                    : AppColors.primaryLight,
+                    ? VlvtColors.primaryDark
+                    : VlvtColors.primary,
                 Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark.withValues(alpha: 0.7)
-                    : AppColors.primaryLight.withValues(alpha: 0.7),
+                    ? VlvtColors.primaryDark.withValues(alpha: 0.7)
+                    : VlvtColors.primary.withValues(alpha: 0.7),
               ],
             ),
           ),
@@ -177,7 +178,7 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
                       Text(
                         'Check your email',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.displaySmall.copyWith(
+                        style: VlvtTextStyles.displaySmall.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -187,7 +188,7 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
                       Text(
                         'We sent a verification link to:',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(
+                        style: VlvtTextStyles.bodyMedium.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
@@ -195,7 +196,7 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
                       Text(
                         widget.email,
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.h4.copyWith(
+                        style: VlvtTextStyles.h4.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
@@ -207,7 +208,7 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
                         child: Text(
                           'Click the link in your email to verify your account and complete registration.',
                           textAlign: TextAlign.center,
-                          style: AppTextStyles.bodyMedium.copyWith(
+                          style: VlvtTextStyles.bodyMedium.copyWith(
                             color: Colors.white.withValues(alpha: 0.8),
                           ),
                         ),
@@ -218,7 +219,7 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
                         onPressed: (_cooldownSeconds > 0 || _isResending) ? null : _resendVerificationEmail,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: AppColors.primary,
+                          foregroundColor: VlvtColors.primary,
                           disabledBackgroundColor: Colors.white.withValues(alpha: 0.3),
                           disabledForegroundColor: Colors.white.withValues(alpha: 0.5),
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -226,7 +227,7 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
                             borderRadius: Spacing.borderRadiusMd,
                           ),
                           elevation: 4,
-                          textStyle: AppTextStyles.button,
+                          textStyle: VlvtTextStyles.button,
                         ),
                         child: _isResending
                             ? const SizedBox(
@@ -234,7 +235,7 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                                  valueColor: AlwaysStoppedAnimation<Color>(VlvtColors.primary),
                                 ),
                               )
                             : Text(
@@ -249,7 +250,7 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
                         onPressed: _backToLogin,
                         child: Text(
                           'Back to login',
-                          style: AppTextStyles.bodyMedium.copyWith(
+                          style: VlvtTextStyles.bodyMedium.copyWith(
                             color: Colors.white,
                             decoration: TextDecoration.underline,
                             fontWeight: FontWeight.w600,
@@ -263,7 +264,7 @@ class _VerificationPendingScreenState extends State<VerificationPendingScreen> w
                         child: Text(
                           'Didn\'t receive the email? Check your spam folder or try resending.',
                           textAlign: TextAlign.center,
-                          style: AppTextStyles.caption.copyWith(
+                          style: VlvtTextStyles.caption.copyWith(
                             color: Colors.white.withValues(alpha: 0.7),
                           ),
                         ),

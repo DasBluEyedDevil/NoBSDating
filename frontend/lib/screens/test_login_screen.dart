@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/auth_service.dart';
 import '../config/app_config.dart';
-import '../config/app_colors.dart';
+import '../theme/vlvt_colors.dart';
 
 /// Test Login Screen - DEVELOPMENT ONLY
 /// Provides easy access to test user accounts for testing the app
@@ -251,8 +251,8 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
       appBar: AppBar(
         title: const Text('Test User Login'),
         backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.primaryDark
-            : AppColors.primaryLight,
+            ? VlvtColors.primary
+            : VlvtColors.primary,
         foregroundColor: Colors.white,
       ),
       body: Column(
@@ -318,8 +318,8 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.primaryDark.withAlpha(77)
-                          : AppColors.primaryLight.withAlpha(77),
+                          ? VlvtColors.primary.withAlpha(77)
+                          : VlvtColors.primary.withAlpha(77),
                       child: Text(
                         user.emoji,
                         style: const TextStyle(fontSize: 24),
@@ -353,8 +353,8 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
                       onPressed: _isLoading ? null : () => _loginAsTestUser(user),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.primaryDark
-                            : AppColors.primaryLight,
+                            ? VlvtColors.primary
+                            : VlvtColors.primary,
                         foregroundColor: Colors.white,
                       ),
                       child: const Text('Login'),
@@ -371,7 +371,7 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.surface(context)
+                ? VlvtColors.surface
                 : Colors.grey.shade100,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,7 +390,7 @@ class _TestLoginScreenState extends State<TestLoginScreen> {
                   'See backend/seed-data/README.md for details',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary(context),
+                    color: VlvtColors.textSecondary,
                     fontStyle: FontStyle.italic,
                   ),
                 ),

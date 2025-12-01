@@ -5,7 +5,7 @@ import '../models/profile.dart';
 import '../services/profile_api_service.dart';
 import '../services/auth_service.dart';
 import '../widgets/photo_manager_widget.dart';
-import '../config/app_colors.dart';
+import '../theme/vlvt_colors.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   final Profile? existingProfile;
@@ -114,7 +114,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           content: Text(widget.isFirstTimeSetup
               ? 'Profile created successfully!'
               : 'Profile updated successfully!'),
-          backgroundColor: AppColors.success(context),
+          backgroundColor: VlvtColors.success,
         ),
       );
 
@@ -125,7 +125,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to save profile: ${e.toString()}'),
-          backgroundColor: AppColors.error(context),
+          backgroundColor: VlvtColors.error,
         ),
       );
     } finally {
@@ -157,7 +157,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   Icon(
                     Icons.person_add,
                     size: 80,
-                    color: AppColors.primaryLight,
+                    color: VlvtColors.gold,
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -173,7 +173,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     'Let\'s set up your profile to get started',
                     style: TextStyle(
                       fontSize: 16,
-                      color: AppColors.textSecondary(context),
+                      color: VlvtColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -291,13 +291,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.surface(context),
+                      color: VlvtColors.surface,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.border(context)),
+                      border: Border.all(color: VlvtColors.border),
                     ),
                     child: Text(
                       'No interests added yet. Add some to help others get to know you!',
-                      style: TextStyle(color: AppColors.textSecondary(context)),
+                      style: TextStyle(color: VlvtColors.textSecondary),
                       textAlign: TextAlign.center,
                     ),
                   ),

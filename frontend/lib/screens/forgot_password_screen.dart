@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../constants/spacing.dart';
-import '../constants/text_styles.dart';
+import '../theme/vlvt_colors.dart';
+import '../theme/vlvt_text_styles.dart';
 import '../utils/error_handler.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -77,7 +78,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(error.message),
-              backgroundColor: AppColors.error(context),
+              backgroundColor: VlvtColors.error,
               action: SnackBarAction(
                 label: 'Retry',
                 textColor: Colors.white,
@@ -97,12 +98,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(error.message, style: AppTextStyles.labelMedium),
+                Text(error.message, style: VlvtTextStyles.labelMedium),
                 const SizedBox(height: 4),
-                Text(error.guidance, style: AppTextStyles.caption),
+                Text(error.guidance, style: VlvtTextStyles.caption),
               ],
             ),
-            backgroundColor: AppColors.error(context),
+            backgroundColor: VlvtColors.error,
           ),
         );
       }
@@ -122,11 +123,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark
-                    : AppColors.primaryLight,
+                    ? VlvtColors.primaryDark
+                    : VlvtColors.primary,
                 Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.primaryDark.withValues(alpha: 0.7)
-                    : AppColors.primaryLight.withValues(alpha: 0.7),
+                    ? VlvtColors.primaryDark.withValues(alpha: 0.7)
+                    : VlvtColors.primary.withValues(alpha: 0.7),
               ],
             ),
           ),
@@ -168,7 +169,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                       Text(
                         'Forgot Password?',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.displaySmall.copyWith(
+                        style: VlvtTextStyles.displaySmall.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -182,7 +183,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               ? 'Check your email for a password reset link'
                               : 'Enter your email address and we\'ll send you a link to reset your password',
                           textAlign: TextAlign.center,
-                          style: AppTextStyles.bodyMedium.copyWith(
+                          style: VlvtTextStyles.bodyMedium.copyWith(
                             color: Colors.white.withValues(alpha: 0.9),
                           ),
                         ),
@@ -212,7 +213,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               Spacing.verticalMd,
                               Text(
                                 'Email Sent!',
-                                style: AppTextStyles.h3.copyWith(
+                                style: VlvtTextStyles.h3.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -221,7 +222,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               Text(
                                 'We\'ve sent a password reset link to:',
                                 textAlign: TextAlign.center,
-                                style: AppTextStyles.bodyMedium.copyWith(
+                                style: VlvtTextStyles.bodyMedium.copyWith(
                                   color: Colors.white.withValues(alpha: 0.9),
                                 ),
                               ),
@@ -229,7 +230,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               Text(
                                 _emailController.text.trim(),
                                 textAlign: TextAlign.center,
-                                style: AppTextStyles.bodyMedium.copyWith(
+                                style: VlvtTextStyles.bodyMedium.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -238,7 +239,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               Text(
                                 'Please check your inbox (and spam folder) for the reset link.',
                                 textAlign: TextAlign.center,
-                                style: AppTextStyles.bodySmall.copyWith(
+                                style: VlvtTextStyles.bodySmall.copyWith(
                                   color: Colors.white.withValues(alpha: 0.8),
                                 ),
                               ),
@@ -263,7 +264,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                 Spacing.verticalMd,
                                 Text(
                                   'Sending reset link...',
-                                  style: AppTextStyles.bodyMedium.copyWith(
+                                  style: VlvtTextStyles.bodyMedium.copyWith(
                                     color: Colors.white,
                                   ),
                                 ),
@@ -299,7 +300,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: Spacing.borderRadiusMd,
                                     borderSide: const BorderSide(
-                                      color: AppColors.primary,
+                                      color: VlvtColors.primary,
                                       width: 2,
                                     ),
                                   ),
@@ -333,14 +334,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                               ElevatedButton(
                                 onPressed: _sendResetLink,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: VlvtColors.primary,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: Spacing.borderRadiusMd,
                                   ),
                                   elevation: 4,
-                                  textStyle: AppTextStyles.button,
+                                  textStyle: VlvtTextStyles.button,
                                 ),
                                 child: const Text('Send Reset Link'),
                               ),
@@ -353,7 +354,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                         onPressed: () => Navigator.of(context).pop(),
                         child: Text(
                           'Back to login',
-                          style: AppTextStyles.bodyMedium.copyWith(
+                          style: VlvtTextStyles.bodyMedium.copyWith(
                             color: Colors.white,
                             decoration: TextDecoration.underline,
                             fontWeight: FontWeight.w600,

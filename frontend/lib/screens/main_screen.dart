@@ -154,14 +154,10 @@ class MainScreenState extends State<MainScreen> {
           ];
         }
 
-        // Ensure current index is valid for current nav items
+        // Ensure current index is valid for current nav items without triggering extra rebuilds
         final safeIndex = _currentIndex.clamp(0, screens.length - 1);
         if (safeIndex != _currentIndex) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            setState(() {
-              _currentIndex = safeIndex;
-            });
-          });
+          _currentIndex = safeIndex;
         }
 
         return Scaffold(

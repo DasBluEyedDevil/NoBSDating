@@ -316,26 +316,32 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with TickerProviderSt
   void _triggerShakeAnimation() {
     if (_isShaking) return;
 
-    setState(() {
-      _isShaking = true;
-    });
+    // Use addPostFrameCallback to avoid animation conflicts during layout
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _isShaking = true;
+      });
 
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        setState(() {
-          _isShaking = false;
-        });
-      }
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          setState(() {
+            _isShaking = false;
+          });
+        }
+      });
     });
   }
 
   void _moveToNextProfile() {
+    // Dispose controller outside of setState to avoid animation conflicts
+    final oldController = _photoPageController;
+    _photoPageController = null;
+
     setState(() {
       if (_currentProfileIndex < _filteredProfiles.length - 1) {
         _currentProfileIndex++;
         _currentPhotoIndex = 0;
-        _photoPageController?.dispose();
-        _photoPageController = null;
         _saveCurrentIndex();
         // Pre-cache upcoming profile images
         _precacheNextProfiles();
@@ -343,6 +349,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with TickerProviderSt
         _showEndOfProfilesMessage();
       }
     });
+
+    // Dispose after setState completes
+    oldController?.dispose();
   }
 
   void _initPhotoController(int photoCount) {
@@ -1448,11 +1457,16 @@ class _ShakeWidgetState extends State<_ShakeWidget>
     super.didUpdateWidget(oldWidget);
     if (widget.isShaking && !oldWidget.isShaking) {
       _controller.forward(from: 0.0);
+    } else if (!widget.isShaking && oldWidget.isShaking) {
+      // Stop animation if shaking is turned off
+      _controller.stop();
+      _controller.reset();
     }
   }
 
   @override
   void dispose() {
+    _controller.stop();
     _controller.dispose();
     super.dispose();
   }

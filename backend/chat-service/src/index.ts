@@ -28,6 +28,10 @@ import { initializeFirebase, registerFCMToken, unregisterFCMToken, sendMatchNoti
 const app = express();
 const PORT = process.env.PORT || 3003;
 
+// Trust proxy - required for Railway/production environments behind reverse proxy
+// This allows express-rate-limit to correctly identify users via X-Forwarded-For
+app.set('trust proxy', 1);
+
 // Log initialization
 if (process.env.SENTRY_DSN) {
   logger.info('Sentry error tracking enabled', { environment: process.env.NODE_ENV || 'development' });

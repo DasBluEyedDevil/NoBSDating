@@ -557,13 +557,17 @@ class _MatchesScreenState extends State<MatchesScreen> {
               ),
           ],
         ),
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final shouldRefresh = await Navigator.push<bool>(
             context,
             MaterialPageRoute(
               builder: (context) => ChatScreen(match: match),
             ),
           );
+          // Refresh if ChatScreen signals data changed (unmatch/block)
+          if (shouldRefresh == true && mounted) {
+            _loadData(forceRefresh: true);
+          }
         },
         onLongPress: () => _showMatchActions(match),
       ),

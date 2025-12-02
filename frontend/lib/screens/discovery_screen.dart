@@ -66,7 +66,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with TickerProviderSt
   bool _showHeartParticles = false;
   String? _matchOverlayUserName;
   bool? _matchOverlayIsNewMatch;
-  bool _isShaking = false;
+  final bool _isShaking = false;
 
   @override
   void initState() {
@@ -225,6 +225,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with TickerProviderSt
     try {
       // Get services
       final authService = context.read<AuthService>();
+      final profileService = context.read<ProfileApiService>();
       final chatService = context.read<ChatApiService>();
       final prefsService = context.read<DiscoveryPreferencesService>();
       final currentUserId = authService.userId;
@@ -241,43 +242,68 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> with TickerProviderSt
       // Use a like (increments counter for demo users)
       await subscriptionService.useLike();
 
-      // Record the action
+      // Record the action locally
       await prefsService.recordProfileAction(profile.userId, 'like');
 
       // Track profile liked event
       await AnalyticsService.logProfileLiked(profile.userId);
 
-      // Create match
-      final result = await chatService.createMatch(currentUserId, profile.userId);
-      final alreadyExists = result['alreadyExists'] as bool;
-      _lastMatch = result['match'] as Match?;
+      // Record swipe and check for mutual match
+      final swipeResult = await profileService.swipe(
+        targetUserId: profile.userId,
+        action: 'like',
+      );
 
-      // Track match creation if new match
-      if (!alreadyExists && _lastMatch != null) {
-        await AnalyticsService.logMatchCreated(_lastMatch!.matchId);
-      }
+      final isMatch = swipeResult['isMatch'] as bool;
 
-      if (mounted) {
-        // Heavy haptic feedback for actual match (not already existing)
-        if (!alreadyExists) {
-          HapticFeedback.heavyImpact();
+      if (isMatch) {
+        // Mutual like! Create the match now
+        final matchResult = await chatService.createMatch(currentUserId, profile.userId);
+        final alreadyExists = matchResult['alreadyExists'] as bool;
+        _lastMatch = matchResult['match'] as Match?;
+
+        // Track match creation if new match
+        if (!alreadyExists && _lastMatch != null) {
+          await AnalyticsService.logMatchCreated(_lastMatch!.matchId);
         }
 
-        // Show heart particles animation
-        setState(() {
-          _showHeartParticles = true;
-        });
+        if (mounted) {
+          // Heavy haptic feedback for mutual match
+          HapticFeedback.heavyImpact();
 
-        // Show match overlay instead of Snackbar
-        setState(() {
-          _matchOverlayUserName = profile.name ?? "user";
-          _matchOverlayIsNewMatch = !alreadyExists;
-        });
+          // Show heart particles animation
+          setState(() {
+            _showHeartParticles = true;
+          });
+
+          // Show match overlay - it's a new match!
+          setState(() {
+            _matchOverlayUserName = profile.name ?? "user";
+            _matchOverlayIsNewMatch = true;
+          });
+        }
+      } else {
+        // Not a mutual match yet - just show like recorded feedback
+        if (mounted) {
+          // Light haptic for like recorded
+          HapticFeedback.lightImpact();
+
+          // Show heart particles animation
+          setState(() {
+            _showHeartParticles = true;
+          });
+
+          // Show "liked" overlay (not a match yet)
+          setState(() {
+            _matchOverlayUserName = profile.name ?? "user";
+            _matchOverlayIsNewMatch = false;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create match: $e')),
+          SnackBar(content: Text('Failed to like: $e')),
         );
       }
     }

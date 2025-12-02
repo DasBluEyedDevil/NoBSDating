@@ -390,4 +390,72 @@ class ProfileApiService extends ChangeNotifier {
         return MediaType('image', 'jpeg');
     }
   }
+
+  // ===== SWIPE METHODS =====
+
+  /// Record a swipe (like/pass) and check for mutual match
+  /// Returns a map with:
+  /// - success: bool
+  /// - action: 'like' or 'pass'
+  /// - isMatch: bool (true if mutual like detected)
+  /// - message: String
+  Future<Map<String, dynamic>> swipe({
+    required String targetUserId,
+    required String action,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/swipes'),
+        headers: _getAuthHeaders(),
+        body: json.encode({
+          'targetUserId': targetUserId,
+          'action': action,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          return {
+            'success': true,
+            'action': data['action'],
+            'isMatch': data['isMatch'] ?? false,
+            'message': data['message'],
+          };
+        } else {
+          throw Exception(data['error'] ?? 'Swipe failed');
+        }
+      } else {
+        final data = json.decode(response.body);
+        throw Exception(data['error'] ?? 'Failed to record swipe: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error recording swipe: $e');
+      rethrow;
+    }
+  }
+
+  /// Get users who have liked the current user
+  Future<List<Map<String, dynamic>>> getReceivedLikes() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/swipes/received'),
+        headers: _getAuthHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['likes'] != null) {
+          return List<Map<String, dynamic>>.from(data['likes']);
+        } else {
+          throw Exception('Invalid response format');
+        }
+      } else {
+        throw Exception('Failed to get received likes: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error getting received likes: $e');
+      rethrow;
+    }
+  }
 }

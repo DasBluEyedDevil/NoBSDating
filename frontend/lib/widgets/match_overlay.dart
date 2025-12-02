@@ -125,13 +125,13 @@ class _MatchOverlayState extends State<MatchOverlay>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    widget.isNewMatch ? Icons.favorite : Icons.info_outline,
+                    widget.isNewMatch ? Icons.favorite : Icons.favorite_border,
                     color: Colors.white,
                     size: 64,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    widget.isNewMatch ? "It's a Match!" : 'Already Matched!',
+                    widget.isNewMatch ? "It's a Match!" : 'Liked!',
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -142,7 +142,7 @@ class _MatchOverlayState extends State<MatchOverlay>
                   Text(
                     widget.isNewMatch
                         ? 'You and ${widget.userName} liked each other!'
-                        : 'You already matched with ${widget.userName}',
+                        : 'You liked ${widget.userName}',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 16,

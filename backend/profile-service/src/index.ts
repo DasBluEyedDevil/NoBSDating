@@ -776,6 +776,128 @@ app.post('/profiles/search/count', authMiddleware, generalLimiter, async (req: R
   }
 });
 
+// ===== SWIPE ENDPOINTS =====
+
+// Record a swipe (like/pass) and check for mutual match
+app.post('/swipes', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
+  try {
+    const authenticatedUserId = req.user!.userId;
+    const { targetUserId, action } = req.body;
+
+    // Validate input
+    if (!targetUserId || !action) {
+      return res.status(400).json({
+        success: false,
+        error: 'targetUserId and action are required'
+      });
+    }
+
+    if (!['like', 'pass'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        error: 'action must be "like" or "pass"'
+      });
+    }
+
+    if (targetUserId === authenticatedUserId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot swipe on yourself'
+      });
+    }
+
+    // Check if target user exists
+    const targetUserResult = await pool.query(
+      'SELECT user_id FROM profiles WHERE user_id = $1',
+      [targetUserId]
+    );
+
+    if (targetUserResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Target user not found'
+      });
+    }
+
+    // Record the swipe (upsert to handle re-swipes)
+    await pool.query(
+      `INSERT INTO swipes (user_id, target_user_id, action, created_at)
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+       ON CONFLICT (user_id, target_user_id)
+       DO UPDATE SET action = $3, created_at = CURRENT_TIMESTAMP`,
+      [authenticatedUserId, targetUserId, action]
+    );
+
+    logger.info('Swipe recorded', {
+      userId: authenticatedUserId,
+      targetUserId,
+      action
+    });
+
+    // If action is 'like', check for mutual like
+    let isMatch = false;
+    if (action === 'like') {
+      const mutualLikeResult = await pool.query(
+        `SELECT id FROM swipes
+         WHERE user_id = $1 AND target_user_id = $2 AND action = 'like'`,
+        [targetUserId, authenticatedUserId]
+      );
+
+      isMatch = mutualLikeResult.rows.length > 0;
+
+      if (isMatch) {
+        logger.info('Mutual match detected', {
+          userId: authenticatedUserId,
+          targetUserId
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      action,
+      isMatch,
+      message: isMatch ? 'It\'s a match!' : (action === 'like' ? 'Like recorded' : 'Pass recorded')
+    });
+  } catch (error) {
+    logger.error('Failed to record swipe', {
+      error,
+      userId: req.user?.userId,
+      targetUserId: req.body.targetUserId
+    });
+    res.status(500).json({ success: false, error: 'Failed to record swipe' });
+  }
+});
+
+// Get users who have liked the current user (for "See who likes you" feature)
+app.get('/swipes/received', authMiddleware, generalLimiter, async (req: Request, res: Response) => {
+  try {
+    const authenticatedUserId = req.user!.userId;
+
+    const result = await pool.query(
+      `SELECT s.user_id, s.created_at, p.name, p.age, p.photos
+       FROM swipes s
+       JOIN profiles p ON p.user_id = s.user_id
+       WHERE s.target_user_id = $1 AND s.action = 'like'
+       ORDER BY s.created_at DESC`,
+      [authenticatedUserId]
+    );
+
+    const likes = result.rows.map(row => ({
+      userId: row.user_id,
+      name: row.name,
+      age: row.age,
+      photos: row.photos,
+      likedAt: row.created_at
+    }));
+
+    res.json({ success: true, likes });
+  } catch (error) {
+    logger.error('Failed to get received likes', { error, userId: req.user?.userId });
+    res.status(500).json({ success: false, error: 'Failed to get received likes' });
+  }
+});
+
 // Seed test profiles endpoint (ONLY FOR DEVELOPMENT/TESTING/BETA)
 if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_TEST_ENDPOINTS === 'true') {
   app.post('/profile/seed-test-profiles', async (req: Request, res: Response) => {

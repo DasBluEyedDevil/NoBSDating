@@ -402,8 +402,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           cacheService.invalidateMessages(_match!.id);
           cacheService.invalidateLastMessage(_match!.id);
 
-          // Navigate back to matches list
-          Navigator.of(context).pop();
+          // Navigate back to matches list, signaling that data changed
+          Navigator.of(context).pop(true);
         },
       ),
     );

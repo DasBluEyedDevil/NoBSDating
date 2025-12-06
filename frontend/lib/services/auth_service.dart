@@ -437,6 +437,53 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Delete the user's account and all associated data permanently
+  /// Returns true if deletion was successful, false otherwise
+  Future<bool> deleteAccount() async {
+    if (_token == null) {
+      debugPrint('Cannot delete account: not authenticated');
+      return false;
+    }
+
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/auth/account'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Clear local auth state
+        await _storage.delete(key: 'auth_token');
+        await _storage.delete(key: 'user_id');
+
+        try {
+          await _googleSignIn.disconnect();
+        } catch (e) {
+          // Ignore Google sign-out errors during account deletion
+          debugPrint('Google disconnect error (ignored): $e');
+        }
+
+        _token = null;
+        _userId = null;
+        _isAuthenticated = false;
+        notifyListeners();
+
+        debugPrint('Account deleted successfully');
+        return true;
+      }
+
+      final data = json.decode(response.body);
+      debugPrint('Account deletion failed: ${data['error']}');
+      return false;
+    } catch (e) {
+      debugPrint('Error deleting account: $e');
+      return false;
+    }
+  }
+
   /// Set auth data directly (used for test login)
   /// This bypasses OAuth and sets authentication state manually
   Future<void> setAuthData({required String token, required String userId}) async {

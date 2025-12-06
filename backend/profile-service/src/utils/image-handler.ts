@@ -1,14 +1,13 @@
 import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs/promises';
-import path from 'path';
+import { promises as fs } from 'fs';
 import logger from './logger';
+import { uploadToR2, deleteFromR2, validateR2Config } from './r2-client';
 
 // Configuration
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif', 'image/webp'];
 const MAX_PHOTOS_PER_PROFILE = 6;
-const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads');
 
 // Image sizes for optimization
 const IMAGE_SIZES = {
@@ -19,24 +18,20 @@ const IMAGE_SIZES = {
 
 export interface ProcessedImage {
   id: string;
-  url: string;
-  thumbnailUrl: string;
+  key: string;           // R2 object key (stored in database)
+  thumbnailKey: string;  // R2 thumbnail key (stored in database)
   originalSize: number;
   processedSize: number;
 }
 
 /**
- * Initialize upload directory
+ * Initialize R2 storage - validates configuration
  */
-export async function initializeUploadDirectory(): Promise<void> {
-  try {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
-    await fs.mkdir(path.join(UPLOAD_DIR, 'thumbnails'), { recursive: true });
-    logger.info('Upload directory initialized', { path: UPLOAD_DIR });
-  } catch (error) {
-    logger.error('Failed to initialize upload directory', { error });
-    throw error;
+export async function initializeStorage(): Promise<void> {
+  if (!validateR2Config()) {
+    throw new Error('R2 configuration is incomplete. Check environment variables.');
   }
+  logger.info('R2 storage initialized');
 }
 
 /**
@@ -57,13 +52,13 @@ export function validateImage(file: Express.Multer.File): { valid: boolean; erro
 }
 
 /**
- * Process and optimize image
- * Creates thumbnail and optimized versions
+ * Process and upload image to R2
+ * Creates thumbnail and optimized versions, uploads both to R2
  * Supports both memory storage (file.buffer) and disk storage (file.path)
+ * Returns R2 object keys (NOT URLs - URLs are generated on-demand via presigning)
  */
 export async function processImage(file: Express.Multer.File, userId: string): Promise<ProcessedImage> {
   const photoId = uuidv4();
-  const ext = 'jpg'; // Always convert to JPEG for consistency
 
   // Determine input source: disk storage uses file.path, memory storage uses file.buffer
   const inputSource = file.path || file.buffer;
@@ -71,10 +66,7 @@ export async function processImage(file: Express.Multer.File, userId: string): P
 
   try {
     // Process main image (large size)
-    const largeFilename = `${userId}_${photoId}.${ext}`;
-    const largePath = path.join(UPLOAD_DIR, largeFilename);
-
-    const largeImage = await sharp(inputSource)
+    const largeBuffer = await sharp(inputSource)
       .rotate() // Auto-rotate based on EXIF orientation AND strip all EXIF metadata (including GPS location)
       .resize(IMAGE_SIZES.large.width, IMAGE_SIZES.large.height, {
         fit: 'inside',
@@ -82,13 +74,10 @@ export async function processImage(file: Express.Multer.File, userId: string): P
       })
       .jpeg({ quality: 85, progressive: true })
       .withMetadata({}) // Explicitly remove all metadata for privacy
-      .toFile(largePath);
+      .toBuffer();
 
     // Process thumbnail
-    const thumbnailFilename = `${userId}_${photoId}_thumb.${ext}`;
-    const thumbnailPath = path.join(UPLOAD_DIR, 'thumbnails', thumbnailFilename);
-
-    await sharp(inputSource)
+    const thumbnailBuffer = await sharp(inputSource)
       .rotate() // Auto-rotate and strip EXIF from thumbnail too
       .resize(IMAGE_SIZES.thumbnail.width, IMAGE_SIZES.thumbnail.height, {
         fit: 'cover',
@@ -96,13 +85,25 @@ export async function processImage(file: Express.Multer.File, userId: string): P
       })
       .jpeg({ quality: 80 })
       .withMetadata({}) // Remove metadata from thumbnail
-      .toFile(thumbnailPath);
+      .toBuffer();
 
-    logger.info('Image processed successfully', {
+    // Upload to R2
+    // Key format: photos/{userId}/{photoId}.jpg
+    const largeKey = `photos/${userId}/${photoId}.jpg`;
+    const thumbnailKey = `photos/${userId}/${photoId}_thumb.jpg`;
+
+    await Promise.all([
+      uploadToR2(largeKey, largeBuffer, 'image/jpeg'),
+      uploadToR2(thumbnailKey, thumbnailBuffer, 'image/jpeg'),
+    ]);
+
+    logger.info('Image processed and uploaded to R2', {
       photoId,
       originalSize: file.size,
-      processedSize: largeImage.size,
+      processedSize: largeBuffer.length,
       userId,
+      largeKey,
+      thumbnailKey,
       storageType: usingDiskStorage ? 'disk' : 'memory',
     });
 
@@ -118,10 +119,10 @@ export async function processImage(file: Express.Multer.File, userId: string): P
 
     return {
       id: photoId,
-      url: `/uploads/${largeFilename}`,
-      thumbnailUrl: `/uploads/thumbnails/${thumbnailFilename}`,
+      key: largeKey,
+      thumbnailKey: thumbnailKey,
       originalSize: file.size,
-      processedSize: largeImage.size,
+      processedSize: largeBuffer.length,
     };
   } catch (error) {
     // Clean up temp file even on error if using disk storage
@@ -138,38 +139,39 @@ export async function processImage(file: Express.Multer.File, userId: string): P
 }
 
 /**
- * Delete image files from disk
+ * Delete image files from R2
+ * @param photoKey - The R2 object key (e.g., photos/user123/abc-123.jpg)
  */
-export async function deleteImage(photoUrl: string): Promise<void> {
+export async function deleteImage(photoKey: string): Promise<void> {
   try {
-    // Extract filename from URL
-    const filename = path.basename(photoUrl);
-    const filePath = path.join(UPLOAD_DIR, filename);
+    // Handle legacy local URLs - extract just the filename portion
+    if (photoKey.startsWith('/uploads/')) {
+      // Legacy format: /uploads/userId_photoId.jpg
+      // We can't delete these from R2, just log and return
+      logger.warn('Attempted to delete legacy local image', { photoKey });
+      return;
+    }
 
     // Delete main image
-    await fs.unlink(filePath).catch(() => {
-      logger.warn('Main image file not found', { filePath });
-    });
+    await deleteFromR2(photoKey);
 
-    // Delete thumbnail
-    const thumbnailFilename = filename.replace(/\.(jpg|jpeg|png)$/i, '_thumb.jpg');
-    const thumbnailPath = path.join(UPLOAD_DIR, 'thumbnails', thumbnailFilename);
-    await fs.unlink(thumbnailPath).catch(() => {
-      logger.warn('Thumbnail file not found', { thumbnailPath });
-    });
+    // Delete thumbnail (derive key from main key)
+    const thumbnailKey = photoKey.replace('.jpg', '_thumb.jpg');
+    await deleteFromR2(thumbnailKey);
 
-    logger.info('Image deleted successfully', { photoUrl });
+    logger.info('Image deleted from R2', { photoKey, thumbnailKey });
   } catch (error) {
-    logger.error('Failed to delete image', { error, photoUrl });
+    logger.error('Failed to delete image from R2', { error, photoKey });
     // Don't throw - deletion is best effort
   }
 }
 
 /**
- * Get photo ID from URL
+ * Get photo ID from key or URL
+ * Handles both R2 keys (photos/user/uuid.jpg) and legacy URLs (/uploads/user_uuid.jpg)
  */
-export function getPhotoIdFromUrl(url: string): string | null {
-  const match = url.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i);
+export function getPhotoIdFromKey(keyOrUrl: string): string | null {
+  const match = keyOrUrl.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i);
   return match ? match[0] : null;
 }
 
@@ -179,5 +181,9 @@ export function getPhotoIdFromUrl(url: string): string | null {
 export function canUploadMorePhotos(currentPhotoCount: number): boolean {
   return currentPhotoCount < MAX_PHOTOS_PER_PROFILE;
 }
+
+// Legacy export for backwards compatibility
+export const initializeUploadDirectory = initializeStorage;
+export const getPhotoIdFromUrl = getPhotoIdFromKey;
 
 export { MAX_PHOTOS_PER_PROFILE };

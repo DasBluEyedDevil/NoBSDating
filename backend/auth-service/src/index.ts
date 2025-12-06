@@ -1521,6 +1521,73 @@ ON CONFLICT (id) DO UPDATE SET is_active = true, expires_at = NOW() + INTERVAL '
   logger.warn('Test login endpoint enabled (NOT FOR PRODUCTION)');
 }
 
+// ===== ACCOUNT DELETION ENDPOINT =====
+// Required for Play Store compliance - allows users to delete their account
+
+app.delete('/auth/account', generalLimiter, async (req: Request, res: Response) => {
+  // Inline JWT verification (authenticateJWT is defined in middleware/auth.ts)
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, error: 'Authentication required' });
+  }
+
+  const token = authHeader.substring(7);
+  let userId: string;
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    userId = decoded.userId;
+  } catch (error) {
+    return res.status(401).json({ success: false, error: 'Invalid or expired token' });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    logger.info('Account deletion requested', { userId });
+
+    await client.query('BEGIN');
+
+    // Delete user from users table - CASCADE will delete:
+    // - profiles
+    // - matches (as user_id_1 or user_id_2)
+    // - messages (as sender_id)
+    // - blocks (as user_id or blocked_user_id)
+    // - reports (as reporter_id - reported_user reports are kept anonymized)
+    // - auth_credentials
+    // - refresh_tokens
+    // - fcm_tokens
+    // - user_status
+    // - user_subscriptions
+    // - swipes
+
+    const result = await client.query(
+      'DELETE FROM users WHERE id = $1 RETURNING id',
+      [userId]
+    );
+
+    if (result.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, error: 'Account not found' });
+    }
+
+    await client.query('COMMIT');
+
+    logger.info('Account deleted successfully', { userId });
+
+    res.json({
+      success: true,
+      message: 'Your account and all associated data have been permanently deleted.'
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    logger.error('Account deletion failed', { error, userId });
+    res.status(500).json({ success: false, error: 'Failed to delete account' });
+  } finally {
+    client.release();
+  }
+});
+
 // Async initialization function
 async function initializeApp() {
   // Initialize advanced caching system

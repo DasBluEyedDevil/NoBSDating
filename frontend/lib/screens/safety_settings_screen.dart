@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/safety_service.dart';
 import '../services/profile_api_service.dart';
+import '../services/auth_service.dart';
 import '../models/profile.dart';
 import '../theme/vlvt_colors.dart';
 import '../widgets/vlvt_button.dart';
@@ -336,9 +337,140 @@ class _SafetySettingsScreenState extends State<SafetySettingsScreen> {
               ],
             ),
           ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Delete Account',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: VlvtColors.crimson,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Permanently delete your account and all associated data. This action cannot be undone.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: VlvtColors.textMuted,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                VlvtButton.secondary(
+                  label: 'Delete My Account',
+                  onPressed: _handleDeleteAccount,
+                  icon: Icons.delete_forever,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
         ],
       ),
     );
+  }
+
+  Future<void> _handleDeleteAccount() async {
+    // First confirmation
+    final firstConfirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Account?'),
+        content: const Text(
+          'This will permanently delete your account, including:\n\n'
+          '• Your profile and photos\n'
+          '• All matches and conversations\n'
+          '• Your subscription (you\'ll need to cancel separately)\n\n'
+          'This action cannot be undone.',
+        ),
+        actions: [
+          VlvtButton.text(
+            label: 'Cancel',
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          VlvtButton.primary(
+            label: 'Continue',
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    if (firstConfirm != true || !mounted) return;
+
+    // Second confirmation with explicit text
+    final secondConfirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Are you absolutely sure?',
+          style: TextStyle(color: VlvtColors.crimson),
+        ),
+        content: const Text(
+          'Type "DELETE" to confirm permanent account deletion.',
+        ),
+        actions: [
+          VlvtButton.text(
+            label: 'Cancel',
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          VlvtButton.primary(
+            label: 'Delete Forever',
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    if (secondConfirm != true || !mounted) return;
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      final authService = context.read<AuthService>();
+      final success = await authService.deleteAccount();
+
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Dismiss loading
+
+      if (success) {
+        // Account deleted - user will be redirected to auth screen automatically
+        // via the AuthService state change
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Your account has been deleted.'),
+            backgroundColor: VlvtColors.surface,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to delete account. Please try again or contact support.'),
+            backgroundColor: VlvtColors.crimson,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Dismiss loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: VlvtColors.crimson,
+        ),
+      );
+    }
   }
 
   String _formatDate(dynamic dateTime) {

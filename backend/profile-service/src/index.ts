@@ -34,6 +34,7 @@ import {
   canUploadMorePhotos,
   MAX_PHOTOS_PER_PROFILE,
 } from './utils/image-handler';
+import { resolvePhotoUrls } from './utils/r2-client';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -75,8 +76,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10kb' }));
 
-// Serve static files (uploaded images)
-app.use('/uploads', express.static('uploads'));
+// NOTE: Static file serving removed - images now served via R2 presigned URLs
 
 // Configure multer for file uploads using disk storage to prevent OOM attacks
 // Files are stored in temp directory and cleaned up after processing
@@ -160,6 +160,9 @@ app.post('/profile', authMiddleware, profileCreationLimiter, validateProfile, as
 
     const profile = result.rows[0];
 
+    // Resolve photo keys to presigned URLs
+    const photoUrls = await resolvePhotoUrls(profile.photos || []);
+
     res.json({
       success: true,
       profile: {
@@ -167,7 +170,7 @@ app.post('/profile', authMiddleware, profileCreationLimiter, validateProfile, as
         name: profile.name,
         age: profile.age,
         bio: profile.bio,
-        photos: profile.photos,
+        photos: photoUrls,
         interests: profile.interests
       }
     });
@@ -199,6 +202,9 @@ app.get('/profile/:userId', authMiddleware, generalLimiter, async (req: Request,
 
     const profile = result.rows[0];
 
+    // Resolve photo keys to presigned URLs
+    const photoUrls = await resolvePhotoUrls(profile.photos || []);
+
     // Return profile data
     // Note: Currently all profile fields are public (name, age, bio, photos, interests)
     // If we add sensitive fields (email, phone, etc.) in the future, we must filter them out
@@ -210,7 +216,7 @@ app.get('/profile/:userId', authMiddleware, generalLimiter, async (req: Request,
         name: profile.name,
         age: profile.age,
         bio: profile.bio,
-        photos: profile.photos,
+        photos: photoUrls,
         interests: profile.interests
       },
       isOwnProfile: isOwnProfile
@@ -256,6 +262,9 @@ app.put('/profile/:userId', authMiddleware, generalLimiter, validateProfileUpdat
 
     const profile = result.rows[0];
 
+    // Resolve photo keys to presigned URLs
+    const photoUrls = await resolvePhotoUrls(profile.photos || []);
+
     res.json({
       success: true,
       profile: {
@@ -263,7 +272,7 @@ app.put('/profile/:userId', authMiddleware, generalLimiter, validateProfileUpdat
         name: profile.name,
         age: profile.age,
         bio: profile.bio,
-        photos: profile.photos,
+        photos: photoUrls,
         interests: profile.interests
       }
     });
@@ -420,21 +429,27 @@ app.post('/profile/photos/upload', authMiddleware, generalLimiter, upload.single
       });
     }
 
-    // Process and save image
+    // Process and upload image to R2
     const processedImage = await processImage(req.file, authenticatedUserId);
 
-    // Update profile with new photo URL
-    const updatedPhotos = [...currentPhotos, processedImage.url];
+    // Update profile with new photo key (R2 object key, not URL)
+    const updatedPhotos = [...currentPhotos, processedImage.key];
     await pool.query(
       'UPDATE profiles SET photos = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2',
       [updatedPhotos, authenticatedUserId]
     );
 
+    // Resolve keys to presigned URLs for the response
+    const [photoUrl, thumbnailUrl] = await resolvePhotoUrls([
+      processedImage.key,
+      processedImage.thumbnailKey,
+    ]);
+
     res.json({
       success: true,
       photo: {
-        url: processedImage.url,
-        thumbnailUrl: processedImage.thumbnailUrl,
+        url: photoUrl,
+        thumbnailUrl: thumbnailUrl,
       },
       totalPhotos: updatedPhotos.length,
     });
@@ -684,13 +699,16 @@ app.get('/profiles/discover', authMiddleware, discoveryLimiter, async (req: Requ
 
     const result = await pool.query(query, params);
 
-    const profiles = result.rows.map(profile => {
+    // Resolve all photo keys to presigned URLs in parallel
+    const profiles = await Promise.all(result.rows.map(async (profile) => {
+      const photoUrls = await resolvePhotoUrls(profile.photos || []);
+
       const profileData: any = {
         userId: profile.user_id,
         name: profile.name,
         age: profile.age,
         bio: profile.bio,
-        photos: profile.photos,
+        photos: photoUrls,
         interests: profile.interests
       };
 
@@ -700,7 +718,7 @@ app.get('/profiles/discover', authMiddleware, discoveryLimiter, async (req: Requ
       }
 
       return profileData;
-    });
+    }));
 
     logger.info('Discovery profiles fetched', {
       userId: authenticatedUserId,
@@ -913,13 +931,13 @@ app.get('/swipes/received', authMiddleware, generalLimiter, async (req: Request,
       [authenticatedUserId]
     );
 
-    const likes = result.rows.map(row => ({
+    const likes = await Promise.all(result.rows.map(async (row) => ({
       userId: row.user_id,
       name: row.name,
       age: row.age,
-      photos: row.photos,
+      photos: await resolvePhotoUrls(row.photos || []),
       likedAt: row.created_at
-    }));
+    })));
 
     res.json({ success: true, likes });
   } catch (error) {
@@ -942,13 +960,13 @@ app.get('/swipes/sent', authMiddleware, generalLimiter, async (req: Request, res
       [authenticatedUserId]
     );
 
-    const likes = result.rows.map(row => ({
+    const likes = await Promise.all(result.rows.map(async (row) => ({
       target_user_id: row.target_user_id,
       name: row.name,
       age: row.age,
-      photos: row.photos,
+      photos: await resolvePhotoUrls(row.photos || []),
       created_at: row.created_at
-    }));
+    })));
 
     res.json({ success: true, likes });
   } catch (error) {
